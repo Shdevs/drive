@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Əlavə Yaddaş - Drive</title>
+    <link rel="icon" type="image/png" href="/img/drivecolor.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --card-bg: #f8f9fa;
+            --border-color: #dee2e6;
+        }
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --card-bg: #2d2d2d;
+            --border-color: #404040;
+        }
+        body {
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+
+        [data-theme="dark"] body {
+            background-color: #000000;
+        }
+        .navbar {
+            background-color: #f8fafd !important;
+        }
+
+        [data-theme="dark"] .navbar {
+            background-color: #1e1e1e !important;
+        }
+        .storage-container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .storage-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+        .gb-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .gb-option {
+            flex: 1;
+            min-width: 90px;
+            padding: 12px 8px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--card-bg);
+            font-size: 0.9rem;
+        }
+        .gb-option:hover {
+            border-color: #4285f4;
+            transform: translateY(-2px);
+        }
+        .gb-option.selected {
+            border-color: #4285f4;
+            background: #4285f4;
+            color: white;
+        }
+        .price-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4285f4;
+            margin: 15px 0;
+        }
+        [data-theme="dark"] .price-display {
+            color: #5a9ef4;
+        }
+        .custom-gb-input {
+            max-width: 150px;
+            margin: 15px auto;
+        }
+        .receipt-upload {
+            margin-top: 20px;
+            padding: 15px;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+        }
+        .receipt-upload.dragover {
+            border-color: #4285f4;
+            background: rgba(66, 133, 244, 0.1);
+        }
+        .receipt-preview {
+            margin-top: 10px;
+        }
+        .receipt-preview img {
+            max-width: 120px;
+            max-height: 90px;
+            border-radius: 6px;
+            object-fit: cover;
+            display: block;
+            margin: 0 auto;
+        }
+        #receiptPreview {
+            text-align: center;
+        }
+        #receiptFileName {
+            font-size: 0.8rem;
+            word-break: break-all;
+            margin-top: 8px;
+        }
+
+        .form-control {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+        }
+
+        .form-control:focus {
+            background-color: var(--card-bg);
+            border-color: #4285f4;
+            color: var(--text-color);
+        }
+
+        .btn-primary {
+            background-color: #4285f4;
+            border-color: #4285f4;
+        }
+
+        [data-theme="dark"] .btn-primary {
+            background-color: #1e1e1e;
+            border-color: #333333;
+            color: var(--text-color);
+        }
+
+        [data-theme="dark"] .btn-primary:hover {
+            background-color: #edce3c;
+            border-color: #edce3c;
+            color: #000000;
+        }
+
+        .nav-link {
+            color: var(--text-color);
+        }
+
+        [data-theme="dark"] .nav-link {
+            color: var(--text-color);
+        }
+
+        .navbar-brand {
+            color: var(--text-color);
+        }
+
+        [data-theme="dark"] .navbar-brand {
+            color: var(--text-color);
+        }
+
+        .text-muted {
+            color: var(--text-secondary) !important;
+        }
+
+        [data-theme="dark"] {
+            --text-secondary: #b0b0b0;
+        }
+
+        .navbar-brand img {
+            filter: brightness(0);
+        }
+
+        [data-theme="dark"] .navbar-brand img {
+            filter: brightness(0) invert(1);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="/drive" style="gap:8px;">
+                <img src="/img/drive.png" alt="Drive" style="height:28px;width:auto;margin-left:80px;">
+                <span>Drive</span>
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/drive">Geri</a>
+                <a class="nav-link" href="/logout">Çıxış</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="storage-container">
+        <div class="storage-card">
+            <h4 class="mb-3"><i class="bi bi-hdd-stack me-2"></i>Əlavə Yaddaş Alın</h4>
+            <p class="text-muted mb-3" style="font-size: 0.9rem;">Maksimum 50GB əlavə yaddaş ala bilərsiniz. 1GB = 7.99 AZN</p>
+            
+            <div class="mb-3">
+                <label class="form-label fw-bold" style="font-size: 0.95rem;">GB miqdarı seçin:</label>
+                <div class="gb-selector">
+                    <div class="gb-option" data-gb="5">5 GB</div>
+                    <div class="gb-option" data-gb="10">10 GB</div>
+                    <div class="gb-option" data-gb="20">20 GB</div>
+                    <div class="gb-option" data-gb="30">30 GB</div>
+                    <div class="gb-option" data-gb="50">50 GB</div>
+                </div>
+                <div class="text-center mt-2">
+                    <label class="form-label" style="font-size: 0.85rem;">Və ya özünüz daxil edin:</label>
+                    <input type="number" class="form-control custom-gb-input" id="customGbInput" min="1" max="50" placeholder="GB miqdarı" style="font-size: 0.9rem;">
+                </div>
+            </div>
+
+            <div class="text-center">
+                <div class="price-display" id="priceDisplay">0.00 AZN</div>
+                <p class="text-muted" id="gbDisplay" style="font-size: 0.85rem;">0 GB seçildi</p>
+            </div>
+
+            <div class="receipt-upload" id="receiptUpload">
+                <i class="bi bi-cloud-upload" style="font-size: 36px; color: #4285f4; margin-bottom: 10px;"></i>
+                <p class="mb-1" style="font-size: 0.9rem;">Çeki buraya sürükləyin və ya <label for="receiptFile" class="text-primary" style="cursor: pointer;">buraya tıklayın</label></p>
+                <input type="file" id="receiptFile" accept="image/*,.pdf" style="display: none;">
+                <p class="text-muted small mb-0" style="font-size: 0.8rem;">JPG, PNG və ya PDF formatında</p>
+                <div id="receiptPreview" class="receipt-preview" style="display: none;">
+                    <img id="receiptPreviewImg" src="" alt="Çek önizləməsi">
+                    <p class="mt-2 mb-0" id="receiptFileName"></p>
+                    <button type="button" class="btn btn-sm btn-danger mt-2" id="removeReceiptBtn" style="font-size: 0.8rem;">Çeki sil</button>
+                </div>
+            </div>
+
+            <div class="alert alert-danger mt-3" id="errorAlert" style="display: none; font-size: 0.85rem; padding: 8px 12px;"></div>
+            <div class="alert alert-success mt-3" id="successAlert" style="display: none; font-size: 0.85rem; padding: 8px 12px;"></div>
+
+            <div class="text-center mt-3">
+                <button type="button" class="btn btn-primary px-4" id="submitBtn" disabled style="font-size: 0.9rem;">
+                    <i class="bi bi-send me-2"></i>Ödəniş yapıb göndərin
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Dark mode kontrolü
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+
+        let selectedGb = 0;
+        const pricePerGb = 7.99;
+        let receiptFile = null;
+
+        // GB seçimi
+        document.querySelectorAll('.gb-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.gb-option').forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedGb = parseInt(this.getAttribute('data-gb'));
+                document.getElementById('customGbInput').value = '';
+                updatePrice();
+            });
+        });
+
+        // Özel GB girişi
+        document.getElementById('customGbInput').addEventListener('input', function() {
+            const value = parseInt(this.value);
+            if (value && value >= 1 && value <= 50) {
+                selectedGb = value;
+                document.querySelectorAll('.gb-option').forEach(opt => opt.classList.remove('selected'));
+                updatePrice();
+            } else if (this.value === '') {
+                selectedGb = 0;
+                updatePrice();
+            }
+        });
+
+        // Fiyat güncelleme
+        function updatePrice() {
+            const totalPrice = selectedGb * pricePerGb;
+            document.getElementById('priceDisplay').textContent = totalPrice.toFixed(2) + ' AZN';
+            document.getElementById('gbDisplay').textContent = selectedGb + ' GB seçildi';
+            checkSubmitButton();
+        }
+
+        // Çek yükleme
+        const receiptUpload = document.getElementById('receiptUpload');
+        const receiptFileInput = document.getElementById('receiptFile');
+        const receiptPreview = document.getElementById('receiptPreview');
+        const receiptPreviewImg = document.getElementById('receiptPreviewImg');
+        const receiptFileName = document.getElementById('receiptFileName');
+        const removeReceiptBtn = document.getElementById('removeReceiptBtn');
+
+        receiptFileInput.addEventListener('change', function(e) {
+            handleFile(e.target.files[0]);
+        });
+
+        // Drag and drop
+        receiptUpload.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+
+        receiptUpload.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        });
+
+        receiptUpload.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file) return;
+            
+            // Dosya tipi kontrolü
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+            if (!validTypes.includes(file.type)) {
+                showError('Yalnız JPG, PNG və ya PDF formatında fayl yükləyə bilərsiniz.');
+                return;
+            }
+
+            receiptFile = file;
+            
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    receiptPreviewImg.src = e.target.result;
+                    receiptPreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                receiptPreviewImg.style.display = 'none';
+                receiptPreview.style.display = 'block';
+            }
+            
+            receiptFileName.textContent = file.name;
+            checkSubmitButton();
+        }
+
+        removeReceiptBtn.addEventListener('click', function() {
+            receiptFile = null;
+            receiptFileInput.value = '';
+            receiptPreview.style.display = 'none';
+            checkSubmitButton();
+        });
+
+        function checkSubmitButton() {
+            const submitBtn = document.getElementById('submitBtn');
+            if (selectedGb > 0 && receiptFile) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+
+        // Gönderme
+        document.getElementById('submitBtn').addEventListener('click', async function() {
+            if (!selectedGb || !receiptFile) {
+                showError('Zəhmət olmasa GB miqdarı seçin və çek yükləyin.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('gb', selectedGb);
+            formData.append('price', (selectedGb * pricePerGb).toFixed(2));
+            formData.append('receipt', receiptFile);
+
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Göndərilir...';
+
+            try {
+                const response = await fetch('/submit-payment', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess('Çekiniz uğurla göndərildi. Təsdiqləndikdən sonra yaddaşınız artırılacaq.');
+                    setTimeout(() => {
+                        window.close();
+                    }, 2000);
+                } else {
+                    showError(data.message || 'Xəta yarandı. Zəhmət olmasa yenidən cəhd edin.');
+                    this.disabled = false;
+                    this.innerHTML = '<i class="bi bi-send me-2"></i>Ödəniş yapıb göndərin';
+                }
+            } catch (error) {
+                showError('Xəta yarandı. Zəhmət olmasa yenidən cəhd edin.');
+                this.disabled = false;
+                this.innerHTML = '<i class="bi bi-send me-2"></i>Ödəniş yapıb göndərin';
+            }
+        });
+
+        function showError(message) {
+            const errorAlert = document.getElementById('errorAlert');
+            errorAlert.textContent = message;
+            errorAlert.style.display = 'block';
+            document.getElementById('successAlert').style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            const successAlert = document.getElementById('successAlert');
+            successAlert.textContent = message;
+            successAlert.style.display = 'block';
+            document.getElementById('errorAlert').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fayl Endirilir - Drive</title>
+    <link rel="icon" type="image/png" href="/img/drivecolor.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --card-bg: #f8f9fa;
+            --border-color: #dee2e6;
+        }
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --card-bg: #2d2d2d;
+            --border-color: #404040;
+        }
+        body {
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .download-container {
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        .download-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+        .download-icon {
+            font-size: 64px;
+            color: #4285f4;
+            margin-bottom: 20px;
+        }
+        .countdown {
+            font-size: 48px;
+            font-weight: bold;
+            color: #4285f4;
+            margin: 20px 0;
+        }
+        .file-name {
+            font-size: 18px;
+            font-weight: 500;
+            margin: 20px 0;
+            word-break: break-all;
+        }
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4285f4, #34a853);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        .message {
+            font-size: 14px;
+            color: #666;
+            margin-top: 20px;
+        }
+        [data-theme="dark"] .message {
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="download-container">
+        <div class="download-card">
+            <i class="bi bi-download download-icon"></i>
+            <h2>Fayl Endirilir</h2>
+            <div class="file-name" id="fileName"><%= decodeURIComponent(filename) %></div>
+            <div class="countdown" id="countdown">10</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <p class="message">Fayl avtomatik olaraq endiriləcək...</p>
+        </div>
+    </div>
+
+    <script>
+        // Dark mode kontrolü
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        
+        let countdown = 10;
+        const countdownElement = document.getElementById('countdown');
+        const progressBar = document.getElementById('progressBar');
+        const downloadUrl = '/download-file/<%= encodeURIComponent(filename) %>';
+        
+        const interval = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
+            progressBar.style.width = ((10 - countdown) / 10 * 100) + '%';
+            
+            if (countdown <= 0) {
+                clearInterval(interval);
+                countdownElement.textContent = '0';
+                progressBar.style.width = '100%';
+                
+                // İndirmeyi başlat
+                setTimeout(() => {
+                    window.location.href = downloadUrl;
+                }, 300);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,3452 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drive - Drive</title>
+    <link rel="icon" type="image/png" href="/img/drivecolor.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-sidebar: #f8fafd;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-sidebar: #1e1e1e;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --border-color: #333333;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        [data-theme="dark"] body {
+            background-color: #000000;
+        }
+
+        .file-item {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+        }
+        .file-item:hover {
+            background-color: var(--bg-secondary);
+        }
+        .file-row {
+            cursor: move;
+        }
+        .file-row:hover {
+            background-color: var(--bg-secondary);
+        }
+        .folder-row {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .folder-row.drag-over {
+            background-color: #e3f2fd !important;
+            border: 2px dashed #2196F3;
+        }
+        .back-row {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .back-row.drag-over {
+            background-color: #e8f5e9 !important;
+            border: 2px dashed #4caf50;
+        }
+        .storage-bar {
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .storage-used {
+            height: 100%;
+            background-color: #4285f4;
+            transition: width 0.3s ease;
+        }
+        .left-menu {
+            width: 280px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            height: calc(100vh - 56px);
+            position: fixed;
+            left: 0;
+            top: 56px;
+        }
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+        }
+        .navbar {
+            background-color: var(--bg-sidebar) !important;
+        }
+
+        .upload-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--bg-primary);
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px var(--shadow);
+            display: none;
+            z-index: 1000;
+            color: var(--text-primary);
+        }
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background-color 0.3s ease;
+        }
+        .drop-zone.highlight {
+            background-color: var(--bg-secondary);
+        }
+        .user-info {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            position: relative;
+            margin: 0 auto 10px;
+        }
+        .avatar-upload-btn {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.85);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: background 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        .avatar-upload-btn:hover {
+            background: #e3f0ff;
+            box-shadow: 0 4px 16px rgba(66,133,244,0.15);
+        }
+        .avatar-upload-btn i {
+            color: #4285f4;
+            font-size: 18px;
+        }
+        .table .file-menu {
+            left: 0 !important;
+            right: auto !important;
+            top: 100% !important;
+            min-width: 170px;
+            max-height: 220px;
+            overflow-y: auto;
+            z-index: 2000;
+            margin-top: 2px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            display: none;
+        }
+        .table .file-menu.show {
+            display: block !important;
+        }
+        .table .file-menu .dropdown-item {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .card {
+            overflow: visible !important;
+        }
+        .main-content, .container, .container-fluid, .row, .col-md-12 {
+            overflow: visible !important;
+            background: var(--bg-sidebar);
+        }
+        
+        #paginationContainer {
+            overflow: visible !important;
+        }
+        
+
+        [data-theme="dark"] .main-content, 
+        [data-theme="dark"] .container, 
+        [data-theme="dark"] .container-fluid, 
+        [data-theme="dark"] .row, 
+        [data-theme="dark"] .col-md-12 {
+            background: #000000;
+        }
+
+        body {
+            background-color: var(--bg-sidebar);
+        }
+        .navbar-brand .logo-container {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            flex-shrink: 0;
+        }
+
+        .navbar-brand img {
+            height: 28px;
+            width: 28px;
+            object-fit: contain;
+            transition: opacity 0.3s ease;
+        }
+
+        .navbar-brand img.default-logo {
+            filter: brightness(0);
+            opacity: 1;
+        }
+
+        .navbar-brand img.color-logo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            filter: none;
+        }
+
+        .navbar-brand:hover img.default-logo {
+            opacity: 0;
+        }
+
+        .navbar-brand:hover img.color-logo {
+            opacity: 1;
+        }
+
+        [data-theme="dark"] .navbar-brand img.default-logo {
+            filter: brightness(0) invert(1);
+        }
+
+        .navbar-brand {
+            color: var(--text-primary);
+        }
+
+        .nav-link {
+            color: var(--text-primary);
+        }
+
+        .card {
+            background-color: var(--bg-primary);
+            border-color: var(--border-color);
+        }
+
+        .table {
+            color: var(--text-primary);
+        }
+
+        .table td, .table th {
+            border-color: var(--border-color);
+        }
+
+        .btn-primary {
+            background-color: #4285f4;
+            border-color: #4285f4;
+        }
+
+        [data-theme="dark"] .btn-primary {
+            background-color: #1e1e1e;
+            border-color: #333333;
+            color: var(--text-primary);
+        }
+
+        [data-theme="dark"] .btn-primary:hover {
+            background-color: #edce3c;
+            border-color: #edce3c;
+            color: #000000;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="/" style="gap:8px; margin-left: 80px;">
+                <div class="logo-container">
+                    <img src="/img/drive.png" alt="Drive" class="default-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                    <img src="/img/drivecolor.png" alt="Drive" class="color-logo" onerror="this.style.display='none';">
+                </div>
+                <span>Drive</span>
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/logout">Çıxış</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="left-menu">
+        <div class="user-info">
+            <div class="user-avatar position-relative" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#avatarModal">
+                <% if (user.avatar) { %>
+                    <% 
+                        // Avatar path'i Supabase Storage'dan mı yoksa local'den mi kontrol et
+                        let avatarUrl;
+                        if (user.avatar.includes('/') && !user.avatar.startsWith('data/') && !user.avatar.startsWith('avatars/')) {
+                            // Supabase Storage path (örn: 'userId/avatar.png')
+                            avatarUrl = 'https://owtpwnwinpluptrzpwzv.supabase.co/storage/v1/object/public/avatars/' + user.avatar;
+                        } else {
+                            // Local path
+                            avatarUrl = '/' + (user.avatar.startsWith('/') ? user.avatar.substring(1) : user.avatar);
+                        }
+                    %>
+                    <img src="<%= avatarUrl %>" alt="avatar" style="width:80px;height:80px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <% } %>
+                <span style="width:80px;height:80px;display:flex;align-items:center;justify-content:center;font-size:32px;background:#4285f4;color:white;border-radius:50%;<% if (user.avatar) { %>display:none;<% } %>">
+                    <%= user.username.charAt(0).toUpperCase() %>
+                </span>
+                <span class="avatar-upload-btn"><i class="bi bi-camera"></i></span>
+            </div>
+            <h5 class="mb-1 mt-2"><%= user.username %></h5>
+            <p class="text-muted mb-0 d-flex align-items-center justify-content-center gap-2">
+                <% if (user.status === 'developer') { %>
+                    <img src="/img/code.png" alt="developer" style="width:20px;height:20px;filter: brightness(0) saturate(100%) invert(27%) sepia(100%) saturate(2000%) hue-rotate(210deg) brightness(0.9) contrast(1.2);">
+                    Developer
+                <% } else { %>
+                    İstifadəçi
+                <% } %>
+            </p>
+        </div>
+        
+        <div class="storage-info mb-4">
+            <h6 class="mb-2">Saxlama sahəsi</h6>
+            <div class="storage-bar mb-2">
+                <div class="storage-used" style="width: <%= Math.min((user.storageUsed / user.maxStorage * 100), 100).toFixed(2) + '%' %>;"></div>
+            </div>
+            <p class="small text-muted mb-0">
+                İstifadə edilən: <%= (user.storageUsed / (1024 * 1024 * 1024)).toFixed(2) %> GB / <%= (user.maxStorage / (1024 * 1024 * 1024)).toFixed(2) %> GB
+            </p>
+        </div>
+
+        <div class="menu-items">
+            <a href="/drive" class="d-flex align-items-center text-decoration-none text-dark mb-3 <%= filter === '' ? 'fw-bold' : '' %>">
+                <i class="bi bi-folder me-2"></i>
+                Fayllarım
+            </a>
+            <a href="/drive?filter=starred" class="d-flex align-items-center text-decoration-none text-dark mb-3 <%= filter === 'starred' ? 'fw-bold' : '' %>">
+                <i class="bi bi-star me-2"></i>
+                Ulduzlu
+            </a>
+            <a href="/drive?filter=recent" class="d-flex align-items-center text-decoration-none text-dark mb-3 <%= filter === 'recent' ? 'fw-bold' : '' %>">
+                <i class="bi bi-clock-history me-2"></i>
+                Son
+            </a>
+            <a href="/drive?filter=deleted" class="d-flex align-items-center text-decoration-none text-dark mb-3 <%= filter === 'deleted' ? 'fw-bold' : '' %>">
+                <i class="bi bi-trash me-2"></i>
+                Səbət
+            </a>
+            <a href="#" class="d-flex align-items-center text-decoration-none text-dark" data-bs-toggle="modal" data-bs-target="#settingsModal">
+                <i class="bi bi-gear me-2"></i>
+                Ayarlar
+            </a>
+            <% if (user.status === 'developer') { %>
+            <a href="/drive?filter=payment" class="d-flex align-items-center text-decoration-none text-dark mt-3 <%= filter === 'payment' ? 'fw-bold' : '' %>">
+                <i class="bi bi-receipt me-2"></i>
+                Ödəniş Sorğuları
+            </a>
+            <% } %>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-center">
+            <button class="btn btn-outline-primary rounded-pill px-4" style="font-weight:500; font-size:1rem;" onclick="window.open('/storage', '_blank')">
+                Əlavə yaddaş əldə edin
+            </button>
+        </div>
+
+        <div class="mt-5">
+            <h6 class="text-muted" style="font-size: 0.95rem;">İcazəli fayl növləri</h6>
+            <div style="font-size: 0.95rem; color: #666; line-height: 1.7;">
+                png, jpg, jpeg, gif, bmp, webp, svg, pdf, doc, docx, xls, xlsx, ppt, pptx, txt, zip, rar, 7z, tar, gz, jar, mp3, mp4, avi, mkv, mov, wav, ogg, json, csv, xml
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="card">
+            <div class="card-body">
+                <!-- <h5 class="card-title">Fayllarım</h5> -->
+
+                <div class="mb-3 d-flex justify-content-between align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2" id="deleteSelectedBtnContainer" style="display:none;">
+                        <button type="button" class="btn btn-danger d-flex align-items-center gap-1" id="deleteSelectedBtn" style="padding: 6px 12px; border-radius: 6px; font-weight: 500; box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2); transition: all 0.3s ease; border: none; font-size: 0.875rem;">
+                            <i class="bi bi-trash-fill" style="font-size: 0.9rem;"></i>
+                            <span>Sil</span>
+                            <span class="badge bg-light text-dark ms-1" id="selectedCountBadge" style="font-size: 0.75rem; padding: 2px 6px; border-radius: 10px; font-weight: 600;">0</span>
+                        </button>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-primary" style="font-size: 0.875rem; padding: 6px 10px; border-radius: 6px; font-weight: 500;" id="fileCountBadge">
+                            <%= files.length %> fayl
+                        </span>
+                        <button type="button" class="btn btn-outline-primary" id="createFolderBtn" title="Yeni klasör yarat">
+                            <i class="bi bi-folder-plus"></i>
+                        </button>
+                    <input type="text" id="fileSearchInput" class="form-control" style="max-width:320px;" placeholder="Fayl adında axtar...">
+                    </div>
+                </div>
+
+                <div class="drop-zone" id="dropZone">
+                    Fayl və ya klasörləri buraya sürükləyib buraxın və ya <label for="fileInput" class="text-primary" style="cursor: pointer;">buraya tıklayın</label>.<br>
+                    <span class="text-muted" style="font-size:0.95em;">Fayl, arxiv (.zip, .rar, .jar) və ya dolu klasörlər yükləyə bilərsiniz. Boş klasörlər yüklənə bilməz.</span>
+                    <input type="file" id="fileInput" name="fileInput" multiple webkitdirectory="" style="display: none;"/>
+                </div>
+
+                <form action="/upload" method="POST" enctype="multipart/form-data" id="classicUploadForm" class="mb-4">
+                    <!-- <div class="input-group">
+                        <input type="file" class="form-control" name="file" required>
+                        <button type="submit" class="btn btn-primary">Yüklə</button>
+                    </div> -->
+                </form>
+
+                <div class="table-responsive">
+                  <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th style="width:5%">
+                          <input type="checkbox" id="selectAllCheckbox" title="Hamısını seç" style="width: 18px; height: 18px; cursor: pointer;">
+                        </th>
+                        <th style="width:35%">Ad</th>
+                        <th style="width:15%">Sahib</th>
+                        <th style="width:25%">Son dəyişiklik</th>
+                        <th style="width:10%">Ölçü</th>
+                        <th style="width:10%"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    <% if (filter === 'payment') { %>
+                        <% if (paymentRequests && paymentRequests.length > 0) { %>
+                            <% paymentRequests.forEach(function(payment) { %>
+                                <tr class="align-middle position-relative payment-row" data-payment-id="<%= payment.id %>">
+                                    <td></td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <% if (payment.receiptFilename.endsWith('.pdf')) { %>
+                                                <i class="bi bi-file-pdf me-2" style="font-size: 24px; color: #dc3545;"></i>
+                                            <% } else { %>
+                                                <img src="/payment-receipts/<%= payment.receiptFilename %>" alt="Çek" style="width:24px;height:24px;margin-right:8px; border-radius: 4px; object-fit: cover; cursor: pointer;" onclick="window.open('/payment-receipts/<%= payment.receiptFilename %>', '_blank')">
+                                            <% } %>
+                                            <span>Ödəniş çeki</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;background:#4285f4;color:white;border-radius:50%;">
+                                                <%= payment.username.charAt(0).toUpperCase() %>
+                                            </span>
+                                            <span class="ms-2"><%= payment.username %></span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <%= new Date(payment.submittedAt).toLocaleString('az-AZ', {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        }) %>
+                                    </td>
+                                    <td>
+                                        <strong><%= payment.gb %> GB</strong><br>
+                                        <small class="text-muted"><%= payment.price.toFixed(2) %> AZN</small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-sm btn-success payment-approve-btn" data-payment-id="<%= payment.id %>" title="Təsdiqlə">
+                                                <i class="bi bi-check-circle"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger payment-reject-btn" data-payment-id="<%= payment.id %>" title="Rədd et">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-5">
+                                    Gözləyən ödəniş sorğusu yoxdur.
+                                </td>
+                            </tr>
+                        <% } %>
+                    <% } else if (currentPath) { %>
+                        <tr class="align-middle back-row" data-back-path="<%= encodeURIComponent(currentPath.split('/').slice(0, -1).join('/')) %>">
+                            <td></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-arrow-left-circle me-2"></i>
+                                    <a href="/drive<%= currentPath ? '?path=' + encodeURIComponent(currentPath.split('/').slice(0, -1).join('/')) : '' %>" class="text-decoration-none text-dark">
+                                        Geri
+                                    </a>
+                                </div>
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    <% } %>
+
+                    <% folders.forEach(function(folder, folderIdx) { %>
+                        <tr class="align-middle position-relative folder-row pagination-item" data-folder-path="<%= encodeURIComponent(folder.path) %>" draggable="true" data-page-index="<%= Math.floor(folderIdx / 20) + 1 %>">
+                            <td>
+                                <input type="checkbox" class="file-checkbox" data-file-path="<%= encodeURIComponent(folder.path) %>" data-file-name="<%= folder.name %>" data-file-type="folder" style="width: 18px; height: 18px; cursor: pointer;">
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <% if (folder.isEmpty) { %>
+                                        <img src="/img/folder.png" alt="folder" style="width:24px;height:24px;margin-right:8px;">
+                                    <% } else { %>
+                                        <img src="/img/file.png" alt="folder" style="width:24px;height:24px;margin-right:8px;">
+                                    <% } %>
+                                    <% if (folder.starred) { %>
+                                        <i class="bi bi-star-fill text-warning me-2"></i>
+                                    <% } %>
+                                    <% if (filter === 'deleted') { %>
+                                        <span class="text-dark d-flex align-items-center w-100" style="opacity: 0.6;">
+                                            <div class="flex-grow-1"><strong><%= folder.name %></strong></div>
+                                        </span>
+                                    <% } else { %>
+                                    <a href="/drive?path=<%= encodeURIComponent(folder.path) %>" class="text-decoration-none text-dark d-flex align-items-center w-100">
+                                        <div class="flex-grow-1"><strong><%= folder.name %></strong></div>
+                                    </a>
+                                    <% } %>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <% if (user.avatar) { %>
+                                        <% 
+                                            let avatarUrl;
+                                            if (user.avatar.includes('/') && !user.avatar.startsWith('data/') && !user.avatar.startsWith('avatars/')) {
+                                                avatarUrl = 'https://owtpwnwinpluptrzpwzv.supabase.co/storage/v1/object/public/avatars/' + user.avatar;
+                                            } else {
+                                                avatarUrl = '/' + (user.avatar.startsWith('/') ? user.avatar.substring(1) : user.avatar);
+                                            }
+                                        %>
+                                        <img src="<%= avatarUrl %>" alt="avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <% } else { %>
+                                        <span style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;background:#4285f4;color:white;border-radius:50%;">
+                                            <%= (folder.createdBy || user.username).charAt(0).toUpperCase() %>
+                                        </span>
+                                    <% } %>
+                                    <span class="ms-2"><%= folder.createdBy || user.username %></span>
+                                </div>
+                            </td>
+                            <td><%= new Date(folder.lastModified).toLocaleString('az-AZ', {year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) %></td>
+                            <td><%= (folder.size / (1024 * 1024)).toFixed(2) %> MB</td>
+                            <td>
+                                <% if (filter === 'deleted') { %>
+                                    <button class="btn btn-sm btn-success folder-restore-btn me-1" data-folder-path="<%= encodeURIComponent(folder.path) %>"><i class="bi bi-arrow-counterclockwise"></i></button>
+                                    <button class="btn btn-sm btn-danger folder-hard-delete-btn" data-folder-path="<%= encodeURIComponent(folder.path) %>"><i class="bi bi-trash"></i></button>
+                                <% } else { %>
+                                    <button class="folder-menu-btn" type="button" data-folder-path="<%= encodeURIComponent(folder.path) %>" style="background:transparent;border:none;box-shadow:none;padding:4px 8px;outline:none;">
+                                        <i class="bi bi-three-dots-vertical" style="font-size:1.3rem;"></i>
+                                    </button>
+                                    <div class="dropdown-menu folder-menu" id="folder-menu-<%= folderIdx %>" style="position:fixed; min-width:170px; display:none; z-index:3000;">
+                                        <button class="dropdown-item folder-rename-btn" data-folder-path="<%= encodeURIComponent(folder.path) %>"><i class="bi bi-pencil me-2"></i>İsmini dəyiş</button>
+                                        <button class="dropdown-item folder-star-btn" data-folder-path="<%= encodeURIComponent(folder.path) %>"><i class="bi bi-star me-2"></i><%= folder.starred ? 'Ulduzdan çıxar' : 'Ulduzla' %></button>
+                                        <button class="dropdown-item folder-delete-btn text-danger" data-folder-path="<%= encodeURIComponent(folder.path) %>"><i class="bi bi-trash me-2"></i>Sil</button>
+                                    </div>
+                                <% } %>
+                            </td>
+                        </tr>
+                    <% }); %>
+
+                    <% files.forEach(function(file, idx) { %>
+                      <tr class="align-middle position-relative file-row pagination-item" data-file-path="<%= encodeURIComponent(file.path) %>" draggable="true" data-page-index="<%= Math.floor((folders.length + idx) / 20) + 1 %>">
+                          <td>
+                          <input type="checkbox" class="file-checkbox" data-file-path="<%= encodeURIComponent(file.path) %>" data-file-name="<%= file.name %>" data-file-type="file" style="width: 18px; height: 18px; cursor: pointer;">
+                        </td>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <img src="<%= getFileIconPath(file.name) %>" alt="file icon" style="width:24px;height:24px;margin-right:8px;">
+                            <% if (file.starred) { %>
+                              <i class="bi bi-star-fill text-warning me-2"></i>
+                            <% } %>
+                            <span><%- file.name %></span>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <% if (user.avatar) { %>
+                                <% 
+                                    let avatarUrl;
+                                    if (user.avatar.includes('/') && !user.avatar.startsWith('data/') && !user.avatar.startsWith('avatars/')) {
+                                        avatarUrl = 'https://owtpwnwinpluptrzpwzv.supabase.co/storage/v1/object/public/avatars/' + user.avatar;
+                                    } else {
+                                        avatarUrl = '/' + (user.avatar.startsWith('/') ? user.avatar.substring(1) : user.avatar);
+                                    }
+                                %>
+                              <img src="<%= avatarUrl %>" alt="avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <% } else { %>
+                              <span style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;background:#4285f4;color:white;border-radius:50%;">
+                                <%= user.username.charAt(0).toUpperCase() %>
+                              </span>
+                            <% } %>
+                            <span class="ms-2"><%= user.username %></span>
+                          </div>
+                        </td>
+                        <td><%= new Date(file.uploadDate).toLocaleString('az-AZ', {year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) %></td>
+                        <td><%= (file.size / (1024 * 1024)).toFixed(2) %> MB</td>
+                        <td>
+                          <% if (filter === 'deleted') { %>
+                            <button class="btn btn-sm btn-success file-restore-btn me-1" data-idx="<%= idx %>"><i class="bi bi-arrow-counterclockwise"></i></button>
+                            <button class="btn btn-sm btn-danger file-hard-delete-btn" data-idx="<%= idx %>"><i class="bi bi-trash"></i></button>
+                          <% } else { %>
+                            <button class="file-menu-btn" type="button" data-idx="<%= idx %>" style="background:transparent;border:none;box-shadow:none;padding:4px 8px;outline:none;">
+                              <i class="bi bi-three-dots-vertical" style="font-size:1.3rem;"></i>
+                            </button>
+                            <div class="dropdown-menu file-menu" id="file-menu-<%= idx %>" style="position:absolute; left:0; top:40px; min-width:170px; display:none; z-index:10;">
+                              <a class="dropdown-item" href="/download/<%= encodeURIComponent(file.path) %>"><i class="bi bi-download me-2"></i>İndir</a>
+                              <button class="dropdown-item file-share-btn" data-link="<%= '/download/' + encodeURIComponent(file.path) %>"><i class="bi bi-link-45deg me-2"></i>Paylaş</button>
+                              <button class="dropdown-item file-move-btn" data-idx="<%= idx %>"><i class="bi bi-arrow-right-circle me-2"></i>Taşı</button>
+                              <button class="dropdown-item file-rename-btn" data-idx="<%= idx %>"><i class="bi bi-pencil me-2"></i>İsmini dəyiş</button>
+                              <button class="dropdown-item file-star-btn" data-idx="<%= idx %>"><i class="bi bi-star me-2"></i><%= file.starred ? 'Ulduzdan çıxar' : 'Ulduzla' %></button>
+                              <button class="dropdown-item file-delete-btn text-danger" data-idx="<%= idx %>"><i class="bi bi-trash me-2"></i>Sil</button>
+                            </div>
+                          <% } %>
+                        </td>
+                      </tr>
+                    <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div id="paginationContainer" style="display: none; margin-top: 20px; padding: 0 10px; position: relative; z-index: 1;">
+                    <div style="display: flex; justify-content: flex-end; align-items: center; gap: 8px;">
+                        <button id="prevPageBtn" class="pagination-btn" style="background: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary); padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;" disabled>
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        <div id="paginationNumbers" style="display: flex; gap: 4px; align-items: center;"></div>
+                        <button id="nextPageBtn" class="pagination-btn" style="background: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary); padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="upload-notification" id="uploadNotification" style="position: fixed; bottom: 20px; right: 20px; background: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: none; z-index: 1000; min-width: 260px;">
+        <div id="uploadFileName" style="margin-bottom: 10px;"></div>
+        <div style="position: relative; background: #e0e0e0; border-radius: 4px; height: 8px; overflow: hidden;">
+            <div id="uploadProgressBar" style="background: #4285f4; height: 100%; width: 0%; transition: width 0.3s;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+            <span id="uploadPercentText" style="font-size: 0.85rem; color: #666;">0%</span>
+            <button id="uploadCancelBtn" style="background: transparent; border: none; color: #666; cursor: pointer; font-size: 0.85rem; display: none;">İptal</button>
+        </div>
+    </div>
+
+    <!-- Silme Bildirimleri Container -->
+    <div id="deleteNotificationsContainer" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column-reverse; gap: 10px; align-items: flex-end; max-height: 80vh; overflow-y: auto;"></div>
+    <div id="errorToast" style="position: fixed; bottom: 90px; right: 20px; min-width: 320px; max-width: 450px; background: var(--bg-primary); color: var(--text-primary); padding: 18px 20px; border-radius: 10px; box-shadow: 0 4px 20px var(--shadow); border: 1px solid var(--border-color); display: none; z-index: 2000; font-size: 0.95rem; animation: slideInRight 0.3s ease-out;">
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <div style="width: 40px; height: 40px; background: #ff5252; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.2rem; color: white;"></i>
+            </div>
+            <div style="flex: 1;">
+                <div style="font-weight: 600; margin-bottom: 8px; font-size: 1rem; color: var(--text-primary);">Xəta</div>
+                <div id="errorToastMsg" style="line-height: 1.6; color: var(--text-secondary);"></div>
+            </div>
+            <button id="errorToastClose" style="background:transparent;border:none;color:var(--text-secondary);font-size:1.5rem;cursor:pointer;opacity:0.7;padding:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity 0.2s,color 0.2s;" onmouseover="this.style.opacity='1';this.style.color='var(--text-primary)'" onmouseout="this.style.opacity='0.7';this.style.color='var(--text-secondary)'">&times;</button>
+        </div>
+    </div>
+
+    <style>
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        [data-theme="dark"] #errorToast {
+            border-color: #333333;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        #errorToast #errorToastMsg div {
+            background: var(--bg-secondary) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        [data-theme="dark"] #errorToast #errorToastMsg div {
+            background: #2a2a2a !important;
+            border: 1px solid #333333 !important;
+        }
+        
+        .pagination-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .pagination-btn:hover:not(:disabled) {
+            background: var(--bg-secondary) !important;
+            border-color: #4285f4 !important;
+            color: #4285f4 !important;
+        }
+        
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed !important;
+        }
+        
+        .pagination-number {
+            min-width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .pagination-number:hover {
+            background: var(--bg-secondary);
+            border-color: #4285f4;
+            color: #4285f4;
+        }
+        
+        .pagination-number.active {
+            background: #4285f4;
+            border-color: #4285f4;
+            color: white;
+        }
+        
+        [data-theme="dark"] .pagination-number.active {
+            background: #4285f4;
+            color: white;
+        }
+        
+        .pagination-item {
+            display: table-row;
+        }
+        
+        .pagination-item.hidden {
+            display: none !important;
+        }
+        
+        .items-per-page-btn {
+            transition: all 0.2s ease !important;
+        }
+        
+        .items-per-page-btn:hover {
+            background: var(--bg-secondary) !important;
+            border-color: #4285f4 !important;
+            color: #4285f4 !important;
+        }
+        
+        .items-per-page-btn.active {
+            background: #4285f4 !important;
+            border-color: #4285f4 !important;
+            color: white !important;
+        }
+        
+        [data-theme="dark"] .items-per-page-btn.active {
+            background: #4285f4 !important;
+            color: white !important;
+        }
+        
+        .items-per-page-btn.active:hover {
+            background: #357abd !important;
+            color: white !important;
+        }
+        
+        .items-per-page-option:hover {
+            background: var(--bg-secondary) !important;
+            border-color: #4285f4 !important;
+            color: #4285f4 !important;
+        }
+        
+        .items-per-page-option.active {
+            background: #4285f4 !important;
+            border-color: #4285f4 !important;
+            color: white !important;
+        }
+        
+        .items-per-page-option.active:hover {
+            background: #357abd !important;
+            border-color: #357abd !important;
+            color: white !important;
+        }
+    </style>
+
+    <!-- Hard Delete Modal -->
+    <div class="modal fade" id="hardDeleteModal" tabindex="-1" aria-labelledby="hardDeleteModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title" id="hardDeleteModalLabel">Faylı tamamilə sil</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Bağla"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-2">Faylı tamamilə silmək istədiyinizə əminsiniz? <br><b>Bu əməliyyat geri qaytarıla bilməz!</b></div>
+            <div class="fw-bold" id="hardDeleteFileName"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İmtina</button>
+            <button type="button" class="btn btn-danger" id="confirmHardDeleteBtn">Bəli, sil</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Avatar Modal -->
+    <div class="modal fade" id="avatarModal" tabindex="-1" aria-labelledby="avatarModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="avatarModalLabel">Profil şəkli yüklə</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bağla"></button>
+          </div>
+          <form id="avatarUploadForm" enctype="multipart/form-data">
+            <div class="modal-body">
+              <input type="file" name="avatar" id="avatarInput" accept="image/*" class="form-control" required>
+              <div id="avatarAlert" style="margin-top: 10px;"></div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İmtina</button>
+              <button type="submit" class="btn btn-primary" id="avatarSubmitBtn">Yüklə</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Paylaş Modal -->
+    <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="shareModalLabel">Faylı paylaş</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bağla"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-2">Paylaşım linki:</div>
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" id="shareLinkInput" readonly>
+              <button class="btn btn-outline-primary" type="button" id="copyShareLinkBtn">Kopyala</button>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bağla</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- İsmini dəyiş Modal -->
+    <div class="modal fade" id="renameModal" tabindex="-1" aria-labelledby="renameModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="renameModalLabel">Faylın adını dəyiş</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bağla"></button>
+          </div>
+          <form id="renameForm" data-item-type="" data-item-path="">
+            <div class="modal-body">
+              <input type="text" class="form-control" id="renameInput" required>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İmtina</button>
+              <button type="submit" class="btn btn-primary">Yadda saxla</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sil Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title" id="deleteModalLabel">Faylı sil</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Bağla"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-2">Faylı silmək istədiyinizə əminsiniz?</div>
+            <div class="fw-bold" id="deleteFileName"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İmtina</button>
+            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Sil</button>
+          </div>
+          <form id="deleteForm" data-item-type="" data-item-path="" style="display:none;"></form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hard Delete Onay Modal -->
+    <div class="modal fade" id="hardDeleteConfirmModal" tabindex="-1" aria-labelledby="hardDeleteConfirmModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title" id="hardDeleteConfirmModalLabel">Tamamilə sil</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Bağla"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-2">Silməy istədiyinizə əminsiniz?</div>
+            <div class="fw-bold" id="hardDeleteConfirmItemName"></div>
+            <div class="mt-2 text-danger"><small><b>Bu əməliyyat geri qaytarıla bilməz!</b></small></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İmtina</button>
+            <button type="button" class="btn btn-danger" id="confirmHardDeleteConfirmBtn">Bəli, sil</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Global Dropdown Menu Template -->
+    <div id="globalFileMenu" class="dropdown-menu file-menu" style="position:fixed; min-width:170px; z-index:3000; display:none;"></div>
+
+    <!-- Klasör Oluştur Modal -->
+    <div class="modal fade" id="createFolderModal" tabindex="-1" aria-labelledby="createFolderModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="createFolderModalLabel"><i class="bi bi-folder-plus me-2"></i>Yeni Klasör Yarat</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bağla"></button>
+          </div>
+          <form id="createFolderForm">
+            <div class="modal-body">
+              <div class="mb-2">
+                <label class="form-label">Klasör adı</label>
+                <input type="text" class="form-control" id="folderNameInput" placeholder="Klasör adı" required>
+              </div>
+              <div id="createFolderAlert" class="alert" style="display:none; margin-top:10px;"></div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İmtina</button>
+              <button type="submit" class="btn btn-primary">Yarat</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dosya Taşı Modal -->
+    <div class="modal fade" id="moveFileModal" tabindex="-1" aria-labelledby="moveFileModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="moveFileModalLabel"><i class="bi bi-arrow-right-circle me-2"></i>Faylı Taşı</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bağla"></button>
+          </div>
+          <form id="moveFileForm">
+            <div class="modal-body">
+              <div class="mb-2">
+                <label class="form-label">Fayl: <strong id="moveFileName"></strong></label>
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Hədəf klasör</label>
+                <div class="d-flex gap-2 mb-2">
+                  <select class="form-select" id="targetFolderSelect" required>
+                    <option value="">Kök klasör</option>
+                  </select>
+                  <button type="button" class="btn btn-outline-primary" id="createFolderFromMoveBtn" title="Yeni klasör yarat">
+                    <i class="bi bi-folder-plus"></i>
+                  </button>
+                </div>
+              </div>
+              <div id="moveFileAlert" class="alert" style="display:none; margin-top:10px;"></div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İmtina</button>
+              <button type="submit" class="btn btn-primary">Taşı</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ayarlar Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="settingsModalLabel"><i class="bi bi-gear me-2"></i>Hesab Ayarları</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bağla"></button>
+          </div>
+          <div class="modal-body">
+            <!-- İsim Değiştirme -->
+            <div class="mb-4">
+              <h6 class="mb-3"><i class="bi bi-person me-2"></i>İstifadəçi adı</h6>
+              <form id="updateUsernameForm">
+                <div class="input-group mb-2">
+                  <input type="text" class="form-control" id="usernameInput" value="<%= user.username %>" required>
+                  <button type="submit" class="btn btn-primary">Yadda saxla</button>
+                </div>
+                <div id="usernameAlert" class="alert" style="display:none; margin-top:10px;"></div>
+              </form>
+            </div>
+
+            <hr>
+
+            <!-- Telefon Değiştirme -->
+            <div class="mb-4">
+              <h6 class="mb-3"><i class="bi bi-telephone me-2"></i>Telefon nömrəsi</h6>
+              <form id="updatePhoneForm">
+                <div class="input-group mb-2">
+                  <input type="text" class="form-control" id="phoneInput" value="<%= user.phone || '' %>" placeholder="Telefon nömrəsi">
+                  <button type="submit" class="btn btn-primary">Yadda saxla</button>
+                </div>
+                <div id="phoneAlert" class="alert" style="display:none; margin-top:10px;"></div>
+              </form>
+            </div>
+
+            <hr>
+
+            <!-- Şifre Değiştirme -->
+            <div class="mb-4">
+              <h6 class="mb-3"><i class="bi bi-lock me-2"></i>Şifrə dəyişdir</h6>
+              <div id="passwordChangeStep1">
+                <button type="button" class="btn btn-outline-primary" id="requestPasswordChangeBtn">
+                  <i class="bi bi-envelope me-2"></i>Doğrulama kodu göndər
+                </button>
+                <div id="passwordChangeAlert" class="alert" style="display:none; margin-top:10px;"></div>
+              </div>
+              <div id="passwordChangeStep2" style="display:none;">
+                <form id="verifyPasswordChangeForm">
+                  <div class="mb-2">
+                    <label class="form-label">Doğrulama kodu</label>
+                    <input type="text" class="form-control" id="passwordChangeCode" placeholder="6 rəqəmli kod" maxlength="6" required>
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">Yeni şifrə</label>
+                    <input type="password" class="form-control" id="newPassword" placeholder="Yeni şifrə" required>
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">Yeni şifrə (təkrar)</label>
+                    <input type="password" class="form-control" id="newPasswordConfirm" placeholder="Yeni şifrə təkrar" required>
+                  </div>
+                  <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Şifrəni dəyiş</button>
+                    <button type="button" class="btn btn-secondary" id="cancelPasswordChangeBtn">İmtina</button>
+                  </div>
+                </form>
+                <div id="passwordChangeVerifyAlert" class="alert" style="display:none; margin-top:10px;"></div>
+              </div>
+            </div>
+
+            <hr>
+
+            <!-- Mail Değiştirme -->
+            <div class="mb-4">
+              <h6 class="mb-3"><i class="bi bi-envelope me-2"></i>Email ünvanı</h6>
+              <p class="text-muted small mb-2">Cari email: <strong><%= user.email || 'Təyin edilməyib' %></strong></p>
+              <div id="emailChangeStep1">
+                <form id="requestEmailChangeForm">
+                  <div class="input-group mb-2">
+                    <input type="email" class="form-control" id="newEmailInput" placeholder="Yeni email ünvanı" required>
+                    <button type="submit" class="btn btn-outline-primary">
+                      <i class="bi bi-envelope me-2"></i>Doğrulama kodu göndər
+                    </button>
+                  </div>
+                </form>
+                <div id="emailChangeAlert" class="alert" style="display:none; margin-top:10px;"></div>
+              </div>
+              <div id="emailChangeStep2" style="display:none;">
+                <form id="verifyEmailChangeForm">
+                  <div class="mb-2">
+                    <label class="form-label">Doğrulama kodu</label>
+                    <input type="text" class="form-control" id="emailChangeCode" placeholder="6 rəqəmli kod" maxlength="6" required>
+                  </div>
+                  <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Emaili dəyiş</button>
+                    <button type="button" class="btn btn-secondary" id="cancelEmailChangeBtn">İmtina</button>
+                  </div>
+                </form>
+                <div id="emailChangeVerifyAlert" class="alert" style="display:none; margin-top:10px;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bağla</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        window.driveFiles = <%- JSON.stringify(files) %>;
+        
+        // Sayfalama sistemi - DOM yüklendikten sonra çalıştır
+        const itemsPerPage = 9; // Sabit 9 öğe sayfa başına
+        
+        // DOM yüklendikten sonra çalıştır
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializePagination);
+        } else {
+            initializePagination();
+        }
+        
+        function initializePagination() {
+            // Sadece dosya ve klasör satırlarını al (back-row ve payment-row hariç)
+            const allItems = Array.from(document.querySelectorAll('.pagination-item')).filter(item => 
+                !item.classList.contains('back-row') && !item.classList.contains('payment-row')
+            );
+            const totalItems = allItems.length;
+            
+            console.log('Pagination items found:', totalItems, 'Items per page:', itemsPerPage);
+            
+            const paginationContainer = document.getElementById('paginationContainer');
+            
+            // Eğer toplam öğe sayısı seçilen değerden fazlaysa sayfalama göster
+            if (totalItems > itemsPerPage) {
+                if (paginationContainer) {
+                    paginationContainer.style.display = 'block';
+                }
+                const totalPages = Math.ceil(totalItems / itemsPerPage);
+                const paginationNumbers = document.getElementById('paginationNumbers');
+                const prevBtn = document.getElementById('prevPageBtn');
+                const nextBtn = document.getElementById('nextPageBtn');
+                
+                if (!paginationNumbers || !prevBtn || !nextBtn) {
+                    console.error('Pagination elements not found!');
+                    return;
+                }
+                
+                let currentPage = 1;
+                
+                
+                // Sayfa numaralarını oluştur
+                function renderPagination() {
+                    paginationNumbers.innerHTML = '';
+                    
+                    // Maksimum 5 sayfa numarası göster
+                    let startPage = Math.max(1, currentPage - 2);
+                    let endPage = Math.min(totalPages, currentPage + 2);
+                    
+                    // İlk sayfa
+                    if (startPage > 1) {
+                        createPageNumber(1);
+                        if (startPage > 2) {
+                            const dots = document.createElement('span');
+                            dots.style.cssText = 'padding: 0 4px; color: var(--text-secondary);';
+                            dots.textContent = '...';
+                            paginationNumbers.appendChild(dots);
+                        }
+                    }
+                    
+                    // Sayfa numaraları
+                    for (let i = startPage; i <= endPage; i++) {
+                        createPageNumber(i);
+                    }
+                    
+                    // Son sayfa
+                    if (endPage < totalPages) {
+                        if (endPage < totalPages - 1) {
+                            const dots = document.createElement('span');
+                            dots.style.cssText = 'padding: 0 4px; color: var(--text-secondary);';
+                            dots.textContent = '...';
+                            paginationNumbers.appendChild(dots);
+                        }
+                        createPageNumber(totalPages);
+                    }
+                    
+                    // Önceki/Sonraki butonları
+                    prevBtn.disabled = currentPage === 1;
+                    nextBtn.disabled = currentPage === totalPages;
+                }
+                
+                function createPageNumber(page) {
+                    const btn = document.createElement('button');
+                    btn.className = 'pagination-number';
+                    if (page === currentPage) {
+                        btn.classList.add('active');
+                    }
+                    btn.textContent = page;
+                    btn.type = 'button'; // Form submit'i engellemek için
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        goToPage(page);
+                    });
+                    paginationNumbers.appendChild(btn);
+                }
+                
+                function goToPage(page) {
+                    console.log('Going to page:', page);
+                    currentPage = page;
+                    showPage(currentPage);
+                    renderPagination();
+                    // Scroll yapma, sayfa sabit kalsın
+                }
+                
+                function showPage(page) {
+                    const startIndex = (page - 1) * itemsPerPage;
+                    const endIndex = startIndex + itemsPerPage;
+                    
+                    console.log('Showing page:', page, 'Items:', startIndex, '-', endIndex);
+                    
+                    // Önce tüm özel satırları (back-row, payment-row) her zaman görünür yap
+                    document.querySelectorAll('.back-row, .payment-row').forEach(row => {
+                        row.classList.remove('hidden');
+                        row.style.display = '';
+                    });
+                    
+                    // Pagination item'ları kontrol et
+                    allItems.forEach((item, index) => {
+                        // Özel satırları atla (zaten yukarıda işlendi)
+                        if (item.classList.contains('back-row') || item.classList.contains('payment-row')) {
+                            return;
+                        }
+                        
+                        if (index >= startIndex && index < endIndex) {
+                            item.classList.remove('hidden');
+                            item.style.display = '';
+                        } else {
+                            item.classList.add('hidden');
+                            item.style.display = 'none';
+                        }
+                    });
+                }
+                
+                // Önceki/Sonraki butonları
+                prevBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (currentPage > 1) {
+                        goToPage(currentPage - 1);
+                    }
+                });
+                
+                nextBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (currentPage < totalPages) {
+                        goToPage(currentPage + 1);
+                    }
+                });
+                
+                // İlk sayfayı göster
+                showPage(1);
+                renderPagination();
+            } else {
+                // Toplam öğe sayısı seçilen değerden azsa sayfalama gizle
+                if (paginationContainer) {
+                    paginationContainer.style.display = 'none';
+                }
+                
+                // Tüm öğeleri göster
+                allItems.forEach(item => {
+                    item.classList.remove('hidden');
+                    item.style.display = '';
+                });
+                document.querySelectorAll('.back-row, .payment-row').forEach(row => {
+                    row.classList.remove('hidden');
+                    row.style.display = '';
+                });
+            }
+        }
+        
+        // Logo hover efekti
+
+        document.getElementById('classicUploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const input = this.querySelector('input[type="file"]');
+            if (!input.files.length) return;
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('relativePath', file.name);
+            const notification = document.getElementById('uploadNotification');
+            const fileNameElement = document.getElementById('uploadFileName');
+            fileNameElement.innerHTML = `${getFileIconClassForUpload(file.name)} ${file.name} yükleniyor...`;
+            notification.style.display = 'block';
+            fetch('/upload', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(() => {
+                fileNameElement.innerHTML = `${getFileIconClassForUpload(file.name)} ${file.name} yüklendi!`;
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                    window.location.reload();
+                }, 1000);
+            })
+            .catch(() => {
+                fileNameElement.innerHTML = `${getFileIconClassForUpload(file.name)} ${file.name} yüklenemedi.`;
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            });
+        });
+
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+
+        // Highlight effect
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            if (eventName === 'dragleave') {
+                dropZone.addEventListener(eventName, unhighlight, false);
+            } else {
+                dropZone.addEventListener(eventName, handleDrop, false);
+            }
+        });
+
+        function highlight(e) {
+            dropZone.classList.add('highlight');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('highlight');
+        }
+
+        // Handle dropped files
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        async function handleDrop(e) {
+            unhighlight(e);
+            const dt = e.dataTransfer;
+            const items = dt.items;
+            
+            // DataTransfer.items API ile klasör desteği (modern tarayıcılar)
+            if (items && items.length > 0) {
+                const fileEntries = [];
+                
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    if (item.kind === 'file') {
+                        const entry = item.webkitGetAsEntry();
+                        if (entry) {
+                            fileEntries.push(entry);
+                        }
+                    }
+                }
+                
+                // Klasör var mı kontrol et
+                const hasDirectories = fileEntries.some(e => e && e.isDirectory);
+                
+                if (hasDirectories) {
+                    const allFiles = [];
+                    const folderCounts = {};
+                    
+                    // Klasörlerden dosyaları recursive olarak topla
+                    for (const entry of fileEntries) {
+                        if (entry && entry.isDirectory) {
+                            const folderName = entry.name;
+                            folderCounts[folderName] = 0;
+                            const fileCount = await readDirectoryEntry(entry, folderName, allFiles, folderCounts);
+                            // Eğer klasör içinde dosya bulunamadıysa, sayacı güncelle
+                            if (fileCount === 0) {
+                                folderCounts[folderName] = 0;
+                            }
+                        } else if (entry && !entry.isDirectory) {
+                            // Klasör dışında kalan dosyalar (bunu ekleme, sadece klasör içindeki dosyaları al)
+                        }
+                    }
+                    
+                    // Boş klasör kontrolü
+                    console.log('Folder counts:', folderCounts);
+                    console.log('All files found:', allFiles.length);
+                    
+                    // Eğer hiç dosya bulunamadıysa
+                    if (allFiles.length === 0) {
+                        showErrorToast('Seçilən klasörlərdə fayl tapılmadı. Yalnız içində fayl olan klasörlər yüklənə bilər.', 'Fayl tapılmadı');
+                        return;
+                    }
+                    
+                    // Boş klasör kontrolü - eğer klasör başlatıldı ama içinde dosya yoksa
+                    const emptyFolders = Object.keys(folderCounts).filter(name => folderCounts[name] === 0);
+                    if (emptyFolders.length > 0) {
+                        const folderNamesList = emptyFolders.map(name => `<div style="margin: 4px 0; padding: 8px 12px; background: var(--bg-secondary); border-radius: 8px; font-weight: 500; color: var(--text-primary); border: 1px solid var(--border-color);">• ${name}</div>`).join('');
+                        const message = `Yalnız içində fayl olan klasörlər yüklənə bilər.<br><br><div style="font-weight: 600; margin-bottom: 8px;">Boş klasörlər:</div>${folderNamesList}`;
+                        showErrorToast(message, 'Boş klasör aşkarlanıldı');
+                        return;
+                    }
+                    
+                    // Entry'leri File'a dönüştür ve webkitRelativePath ekle
+                    const files = await Promise.all(allFiles.map(async (entry) => {
+                        return new Promise((resolve) => {
+                            entry.file((file) => {
+                                // webkitRelativePath property'sini ekle
+                                Object.defineProperty(file, 'webkitRelativePath', {
+                                    value: entry.relativePath,
+                                    writable: false,
+                                    enumerable: true,
+                                    configurable: true
+                                });
+                                resolve(file);
+                            });
+                        });
+                    }));
+                    
+                    handleFiles(files);
+                    return;
+                }
+            }
+            
+            // Fallback: Normal dosya listesi (webkitRelativePath ile - input[webkitdirectory] kullanıldığında)
+            const files = dt.files;
+            
+            if (files.length === 0) {
+                return;
+            }
+            
+            // Klasör yapısını kontrol et (webkitRelativePath ile)
+            const filesWithPaths = Array.from(files).filter(file => file.webkitRelativePath && file.webkitRelativePath.includes('/'));
+            
+            if (filesWithPaths.length > 0) {
+                // Klasör yapısı var - boş klasör kontrolü yap
+                const folderStructure = {};
+                
+                filesWithPaths.forEach(file => {
+                    const pathParts = file.webkitRelativePath.split('/');
+                    if (pathParts.length > 1) {
+                        const folderName = pathParts[0];
+                        if (!folderStructure[folderName]) {
+                            folderStructure[folderName] = 0;
+                        }
+                        folderStructure[folderName]++;
+                    }
+                });
+                
+                // Boş klasör kontrolü
+                const folderNames = Object.keys(folderStructure);
+                const emptyFolders = folderNames.filter(name => folderStructure[name] === 0);
+                if (emptyFolders.length > 0) {
+                    const folderNamesList = emptyFolders.map(name => `<div style="margin: 4px 0; padding: 8px 12px; background: var(--bg-secondary); border-radius: 8px; font-weight: 500; color: var(--text-primary); border: 1px solid var(--border-color);">• ${name}</div>`).join('');
+                    const message = `Yalnız içində fayl olan klasörlər yüklənə bilər.<br><br><div style="font-weight: 600; margin-bottom: 8px;">Boş klasörlər:</div>${folderNamesList}`;
+                    showErrorToast(message, 'Boş klasör aşkarlanıldı');
+                    return;
+                }
+                
+                // Eğer klasör var ama hiç dosya yoksa
+                if (folderNames.length === 0 && filesWithPaths.length > 0) {
+                    showErrorToast('Yalnız içində fayl olan klasörlər yüklənə bilər.', 'Boş klasör aşkarlanıldı');
+                    return;
+                }
+            }
+            
+            handleFiles(files);
+        }
+        
+        // Recursive klasör okuma fonksiyonu
+        async function readDirectoryEntry(entry, basePath, allFiles, folderCounts) {
+            const dirReader = entry.createReader();
+            
+            const readEntries = () => {
+                return new Promise((resolve, reject) => {
+                    dirReader.readEntries((entries) => {
+                        if (entries.length === 0) {
+                            resolve([]);
+                        } else {
+                            resolve(entries);
+                        }
+                    }, reject);
+                });
+            };
+            
+            let entries = [];
+            let hasMore = true;
+            let fileCount = 0;
+            
+            while (hasMore) {
+                const batch = await readEntries();
+                if (batch.length === 0) {
+                    hasMore = false;
+                } else {
+                    entries = entries.concat(batch);
+                    // Chrome'da bazen tek seferde hepsi gelmez, tekrar oku
+                    hasMore = batch.length === 100;
+                }
+            }
+            
+            for (const childEntry of entries) {
+                if (childEntry.isDirectory) {
+                    // Alt klasöre gir ve dosyaları say
+                    const subFileCount = await readDirectoryEntry(childEntry, basePath + '/' + childEntry.name, allFiles, folderCounts);
+                    fileCount += subFileCount;
+                } else {
+                    // Dosyayı basePath ile işaretle
+                    childEntry.relativePath = basePath + '/' + childEntry.name;
+                    allFiles.push(childEntry);
+                    fileCount++;
+                    
+                    // Ana klasör sayacını artır (sadece ilk seviye klasör için)
+                    const topLevelFolder = basePath.split('/')[0];
+                    if (folderCounts[topLevelFolder] !== undefined) {
+                        folderCounts[topLevelFolder]++;
+                    }
+                }
+            }
+            
+            return fileCount;
+        }
+
+        // Handle file input change
+        fileInput.addEventListener('change', function(e) {
+            const files = e.target.files;
+            
+            if (files.length === 0) {
+                return;
+            }
+            
+            console.log('Files selected:', files.length);
+            
+            // Klasör yapısını kontrol et (webkitRelativePath ile)
+            const filesWithPaths = Array.from(files).filter(file => file.webkitRelativePath && file.webkitRelativePath.includes('/'));
+            console.log('Files with paths:', filesWithPaths.length);
+            
+            // Eğer klasör yapısı varsa
+            if (filesWithPaths.length > 0) {
+                // Klasör yapısı var - boş klasör kontrolü yap
+                const folderStructure = {};
+                
+                filesWithPaths.forEach(file => {
+                    const pathParts = file.webkitRelativePath.split('/');
+                    if (pathParts.length > 1) {
+                        const folderName = pathParts[0];
+                        if (!folderStructure[folderName]) {
+                            folderStructure[folderName] = 0;
+                        }
+                        folderStructure[folderName]++;
+                    }
+                });
+                
+                console.log('Folder structure:', folderStructure);
+                
+                // Boş klasör kontrolü - eğer hiç dosya yoksa veya tüm klasörler boşsa
+                const folderNames = Object.keys(folderStructure);
+                
+                if (folderNames.length === 0) {
+                    // Eğer webkitRelativePath var ama klasör adı yoksa, bu garip bir durum
+                    showErrorToast('Klasör yapısı tespit edilemedi. Lütfen içinde dosya olan bir klasör seçin.', 'Xəta');
+                    fileInput.value = "";
+                    return;
+                }
+                
+                // Her klasör için dosya sayısını kontrol et
+                const emptyFolders = folderNames.filter(name => folderStructure[name] === 0);
+                if (emptyFolders.length > 0) {
+                    const folderNamesList = emptyFolders.map(name => `<div style="margin: 4px 0; padding: 8px 12px; background: var(--bg-secondary); border-radius: 8px; font-weight: 500; color: var(--text-primary); border: 1px solid var(--border-color);">• ${name}</div>`).join('');
+                    const message = `Yalnız içində fayl olan klasörlər yüklənə bilər.<br><br><div style="font-weight: 600; margin-bottom: 8px;">Boş klasörlər:</div>${folderNamesList}`;
+                    showErrorToast(message, 'Boş klasör aşkarlanıldı');
+                    fileInput.value = "";
+                    return;
+                }
+            } else if (files.length > 0) {
+                // Normal dosyalar - kontrol yok, direkt yükle
+                console.log('Normal files, no folder structure');
+            }
+            
+            handleFiles(files);
+        });
+
+        let currentUploadXhr = null;
+        let uploadQueue = [];
+        let isUploading = false;
+        let uploadResults = { success: 0, failed: 0, total: 0 };
+        
+        function uploadFileWithProgress(file, index, total) {
+            return new Promise((resolve, reject) => {
+            const url = '/upload';
+            const formData = new FormData();
+            formData.append('file', file);
+            if (file.webkitRelativePath) {
+                formData.append('relativePath', file.webkitRelativePath);
+            } else {
+                formData.append('relativePath', file.name);
+            }
+                
+            const notification = document.getElementById('uploadNotification');
+            const fileNameElement = document.getElementById('uploadFileName');
+            const progressBar = document.getElementById('uploadProgressBar');
+            const percentText = document.getElementById('uploadPercentText');
+            const cancelBtn = document.getElementById('uploadCancelBtn');
+                
+                fileNameElement.innerHTML = `${getFileIconClassForUpload(file.name)} ${file.name} (${index + 1}/${total})`;
+            progressBar.style.width = '0%';
+            percentText.textContent = '0%';
+            notification.style.display = 'block';
+            cancelBtn.style.display = 'inline-block';
+                
+            let aborted = false;
+            const xhr = new XMLHttpRequest();
+            currentUploadXhr = xhr;
+                
+            xhr.open('POST', url, true);
+            xhr.upload.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = percent + '%';
+                    percentText.textContent = percent + '%';
+                }
+            };
+                
+            xhr.onload = function() {
+                    if (!aborted) {
+                        if (xhr.status === 200) {
+                            try {
+                                const response = JSON.parse(xhr.responseText);
+                                if (response.success) {
+                    progressBar.style.width = '100%';
+                    percentText.textContent = '100%';
+                                    fileNameElement.innerHTML = `${getFileIconClassForUpload(file.name)} ${file.name} yüklendi! (${index + 1}/${total})`;
+                    cancelBtn.style.display = 'none';
+                                    uploadResults.success++;
+                                    resolve({ success: true, file: file, response: response });
+                                } else {
+                                    fileNameElement.innerHTML = `${getFileIconClassForUpload(file.name)} ${response.message || 'Yükləmə uğursuz oldu'}`;
+                    cancelBtn.style.display = 'none';
+                                    uploadResults.failed++;
+                                    reject({ success: false, file: file, error: response.message });
+                                }
+                            } catch (e) {
+                                // JSON parse hatası - muhtemelen başarılı
+                                progressBar.style.width = '100%';
+                                percentText.textContent = '100%';
+                                fileNameElement.innerHTML = `${getFileIconClassForUpload(file.name)} ${file.name} yüklendi! (${index + 1}/${total})`;
+                                cancelBtn.style.display = 'none';
+                                uploadResults.success++;
+                                resolve({ success: true, file: file });
+                            }
+                        } else {
+                            try {
+                                const response = JSON.parse(xhr.responseText);
+                                fileNameElement.innerHTML = `${getFileIconClassForUpload(file.name)} ${response.message || 'Yükləmə uğursuz oldu'}`;
+                                uploadResults.failed++;
+                                reject({ success: false, file: file, error: response.message });
+                            } catch (e) {
+                                fileNameElement.innerHTML = `${getFileIconClassForUpload(file.name)} ${file.name} yüklenemedi.`;
+                                uploadResults.failed++;
+                                reject({ success: false, file: file, error: 'Yükləmə uğursuz oldu' });
+                            }
+                            cancelBtn.style.display = 'none';
+                        }
+                    }
+                };
+                
+            xhr.onerror = function() {
+                if (!aborted) {
+                        fileNameElement.innerHTML = `${getFileIconClassForUpload(file.name)} ${file.name} yüklenemedi.`;
+                    cancelBtn.style.display = 'none';
+                        uploadResults.failed++;
+                        reject({ success: false, file: file, error: 'Network error' });
+                }
+            };
+                
+            cancelBtn.onclick = function() {
+                aborted = true;
+                xhr.abort();
+                    fileNameElement.innerHTML = `${getFileIconClassForUpload(file.name)} ${file.name} yükleme iptal edildi.`;
+                progressBar.style.width = '0%';
+                percentText.textContent = '';
+                cancelBtn.style.display = 'none';
+                    uploadQueue = [];
+                    isUploading = false;
+                    reject({ success: false, file: file, error: 'Cancelled' });
+                };
+                
+            xhr.send(formData);
+            });
+        }
+        
+        async function processUploadQueue() {
+            if (isUploading || uploadQueue.length === 0) return;
+            
+            isUploading = true;
+            const total = uploadQueue.length;
+            uploadResults = { success: 0, failed: 0, total: total };
+            
+            for (let i = 0; i < uploadQueue.length; i++) {
+                const file = uploadQueue[i];
+                try {
+                    await uploadFileWithProgress(file, i, total);
+                    // Her dosya arasında kısa bir bekleme (backend'in işlemesi için)
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                } catch (error) {
+                    console.error('Upload error:', error);
+                }
+            }
+            
+            // Tüm yüklemeler tamamlandı
+            const notification = document.getElementById('uploadNotification');
+            const fileNameElement = document.getElementById('uploadFileName');
+            const progressBar = document.getElementById('uploadProgressBar');
+            const percentText = document.getElementById('uploadPercentText');
+            const cancelBtn = document.getElementById('uploadCancelBtn');
+            
+            if (uploadResults.failed === 0) {
+                fileNameElement.innerHTML = `Bütün fayllar yükləndi! (${uploadResults.success}/${total})`;
+            } else {
+                fileNameElement.innerHTML = `${uploadResults.success} fayl yükləndi, ${uploadResults.failed} fayl yüklenemedi.`;
+            }
+            progressBar.style.width = '100%';
+            percentText.textContent = '100%';
+            cancelBtn.style.display = 'none';
+            
+            uploadQueue = [];
+            isUploading = false;
+            
+            // Sayfayı yenile
+            setTimeout(() => {
+                notification.style.display = 'none';
+                window.location.reload();
+            }, 2000);
+        }
+
+        function showErrorToast(msg, title = 'Xəta') {
+            const toast = document.getElementById('errorToast');
+            const toastMsg = document.getElementById('errorToastMsg');
+            const titleElement = toast.querySelector('div[style*="font-weight: 600"]');
+            if (titleElement) {
+                titleElement.textContent = title;
+            }
+            toastMsg.innerHTML = msg;
+            toast.style.display = 'block';
+            if (window.errorToastTimeout) clearTimeout(window.errorToastTimeout);
+            window.errorToastTimeout = setTimeout(() => {
+                toast.style.display = 'none';
+            }, 6000);
+        }
+        document.getElementById('errorToastClose').onclick = function() {
+            document.getElementById('errorToast').style.display = 'none';
+        };
+
+        function handleFiles(files) {
+            // Maksimum dosya boyutu limiti yok, sadece toplam depolama alanı kontrol edilecek
+            const fileArray = [...files];
+            uploadQueue = uploadQueue.concat(fileArray);
+            processUploadQueue();
+        }
+
+        // Global dropdown menu (body'ye taşınan)
+        const globalMenu = document.getElementById('globalFileMenu');
+        let lastMenuIdx = null;
+        let lastMenuFile = null;
+        document.querySelectorAll('.file-menu-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const idx = parseInt(this.getAttribute('data-idx'));
+                lastMenuIdx = idx;
+                lastMenuFile = window.driveFiles && window.driveFiles[idx] ? window.driveFiles[idx] : null;
+                if (!lastMenuFile) {
+                    console.error('Dosya bulunamadı, idx:', idx, 'driveFiles:', window.driveFiles);
+                }
+                // Menü içeriğini kopyala
+                const menu = document.getElementById('file-menu-' + idx);
+                globalMenu.innerHTML = menu.innerHTML;
+                // Konumlandır
+                const rect = this.getBoundingClientRect();
+                // Menü yüksekliğini ölçmek için önce görünür yap
+                globalMenu.style.display = 'block';
+                globalMenu.style.left = (rect.right - globalMenu.offsetWidth) + 'px';
+                // YENİ: Menü ekranın altına taşarsa yukarıda aç
+                const menuHeight = globalMenu.offsetHeight;
+                const spaceBelow = window.innerHeight - rect.bottom;
+                const spaceAbove = rect.top;
+                let top;
+                if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
+                    // Yukarıda aç
+                    top = rect.top - menuHeight - 4;
+                } else {
+                    // Aşağıda aç
+                    top = rect.bottom + 4;
+                }
+                globalMenu.style.top = top + 'px';
+                // Aktif menüdeki butonlara event ekle
+                setTimeout(() => {
+                    globalMenu.querySelector('.file-share-btn')?.addEventListener('click', function(ev) {
+                        ev.preventDefault();
+                        document.getElementById('shareLinkInput').value = window.location.origin + '/download/' + encodeURIComponent(lastMenuFile.path);
+                        new bootstrap.Modal(document.getElementById('shareModal')).show();
+                        globalMenu.style.display = 'none';
+                    });
+                    globalMenu.querySelector('.file-rename-btn')?.addEventListener('click', function(ev) {
+                        ev.preventDefault();
+                        document.getElementById('renameInput').value = lastMenuFile.name;
+                        document.getElementById('renameForm').setAttribute('data-item-type', 'file');
+                        document.getElementById('renameForm').setAttribute('data-item-path', lastMenuFile.path);
+                        new bootstrap.Modal(document.getElementById('renameModal')).show();
+                        globalMenu.style.display = 'none';
+                    });
+                    globalMenu.querySelector('.file-star-btn')?.addEventListener('click', function(ev) {
+                        ev.preventDefault();
+                        fetch('/star', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ path: lastMenuFile.path, starred: !lastMenuFile.starred })
+                        }).then(() => window.location.reload());
+                        globalMenu.style.display = 'none';
+                    });
+                    globalMenu.querySelector('.file-move-btn')?.addEventListener('click', function(ev) {
+                        ev.preventDefault();
+                        loadFoldersForMove();
+                        document.getElementById('moveFileName').textContent = lastMenuFile.name;
+                        document.getElementById('moveFileForm').setAttribute('data-file-path', lastMenuFile.path);
+                        new bootstrap.Modal(document.getElementById('moveFileModal')).show();
+                        globalMenu.style.display = 'none';
+                    });
+                    globalMenu.querySelector('.file-delete-btn')?.addEventListener('click', function(ev) {
+                        ev.preventDefault();
+                        ev.stopPropagation();
+                        
+                        if (!lastMenuFile) {
+                            console.error('Dosya bilgisi bulunamadı, lastMenuIdx:', lastMenuIdx);
+                            alert('Dosya bilgisi tapılmadı. Zəhmət olmasa səhifəni yeniləyin.');
+                            globalMenu.style.display = 'none';
+                            return;
+                        }
+                        
+                        const fileName = lastMenuFile.name;
+                        const filePath = lastMenuFile.path;
+                        
+                        console.log('Silme işlemi başlatılıyor:', { fileName, filePath });
+                        
+                        // Direkt sil
+                        fetch('/delete', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ path: filePath })
+                        }).then(response => {
+                            console.log('Response status:', response.status);
+                            if (!response.ok) {
+                                return response.json().then(data => {
+                                    throw new Error(data.message || 'Silme işlemi başarısız');
+                                }).catch(err => {
+                                    throw new Error(err.message || 'Silme işlemi başarısız');
+                                });
+                            }
+                            return response.json();
+                        }).then(data => {
+                            console.log('Silme başarılı:', data);
+                            // Bildirim bilgisini localStorage'a kaydet (array olarak)
+                            const deletedItems = JSON.parse(localStorage.getItem('deletedItems') || '[]');
+                            deletedItems.push({
+                                name: fileName,
+                                path: filePath,
+                                type: 'file'
+                            });
+                            localStorage.setItem('deletedItems', JSON.stringify(deletedItems));
+                            // Bildirimi göster
+                            showDeleteNotification(fileName, filePath, 'file', false);
+                            // Sayfayı yenile
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 100);
+                        }).catch(error => {
+                            console.error('Silme hatası:', error);
+                            alert('Fayl silinərkən xəta yarandı: ' + error.message);
+                        });
+                        
+                        globalMenu.style.display = 'none';
+                    });
+                }, 10);
+            });
+        });
+        // Menü dışına tıklayınca kapat
+        document.body.addEventListener('click', function() {
+            globalMenu.style.display = 'none';
+        });
+        // Menü içindeyken kapanmasın
+        globalMenu.addEventListener('click', function(e) { e.stopPropagation(); });
+
+        // Paylaş modalında kopyala butonu
+        document.getElementById('copyShareLinkBtn').addEventListener('click', function() {
+            const input = document.getElementById('shareLinkInput');
+            input.select();
+            document.execCommand('copy');
+            this.textContent = 'Kopyalandı!';
+            setTimeout(() => { this.textContent = 'Kopyala'; }, 1200);
+        });
+
+        // İsmini dəyiş modalı submit
+        document.getElementById('renameForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newName = document.getElementById('renameInput').value;
+            const itemType = this.getAttribute('data-item-type');
+            const itemPath = this.getAttribute('data-item-path');
+            
+            if (newName && itemPath) {
+                if (itemType === 'folder') {
+                    fetch('/rename-folder', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ oldPath: itemPath, newName: newName })
+                    }).then(() => window.location.reload());
+                } else {
+                fetch('/rename', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ oldPath: itemPath, newName: newName })
+                }).then(() => window.location.reload());
+                }
+            }
+        });
+
+        // Sil modalı onay
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            const deleteForm = document.getElementById('deleteForm');
+            const itemType = deleteForm.getAttribute('data-item-type');
+            const itemPath = deleteForm.getAttribute('data-item-path');
+            
+            if (itemPath) {
+                if (itemType === 'folder') {
+                    fetch('/delete-folder', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ path: itemPath })
+                    }).then(() => window.location.reload());
+                } else {
+                fetch('/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ path: itemPath })
+                }).then(() => window.location.reload());
+                }
+            }
+        });
+
+        // Silme bildirimi fonksiyonu (her silme için ayrı kart)
+        let notificationCount = 0;
+        const activeNotifications = new Map();
+        
+        function showDeleteNotification(itemName, itemPath, itemType, isHardDelete = false, isBulkDelete = false) {
+            const container = document.getElementById('deleteNotificationsContainer');
+            notificationCount++;
+            const notificationId = 'deleteNotification_' + notificationCount;
+            
+            // Yeni bildirim kartı oluştur
+            const notification = document.createElement('div');
+            notification.id = notificationId;
+            notification.className = 'delete-notification';
+            notification.style.cssText = 'background: #ffffff; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); min-width: 300px; max-width: 400px; border: 1px solid #e0e0e0; display: block;';
+            
+            const content = document.createElement('div');
+            content.style.cssText = 'display: flex; align-items: center; justify-content: space-between;';
+            
+            const textContainer = document.createElement('div');
+            textContainer.style.cssText = 'display: flex; align-items: center; flex: 1;';
+            
+            const notificationText = document.createElement('span');
+            notificationText.id = notificationId + '_text';
+            notificationText.style.cssText = 'font-size: 0.95rem; color: #333333;';
+            
+            // Toplu silme için özel mesaj
+            if (isBulkDelete) {
+                notificationText.textContent = itemName + (isHardDelete ? ' tamamilə silindi' : ' silindi');
+            } else {
+                notificationText.textContent = itemName + (isHardDelete ? ' tamamilə silindi' : ' silindi');
+            }
+            
+            const countdownElement = document.createElement('span');
+            countdownElement.id = notificationId + '_countdown';
+            countdownElement.style.cssText = 'font-size: 0.95rem; color: #666666; margin-left: 8px; font-weight: 500;';
+            countdownElement.textContent = '(' + (isHardDelete ? '10' : '5') + ')';
+            
+            textContainer.appendChild(notificationText);
+            textContainer.appendChild(countdownElement);
+            
+            // countdownInterval'i dışarıda tanımla (undo butonu için erişilebilir olması için)
+            let countdownInterval;
+            
+            // Silinen öğeyi sakla (toplu silme için boş path)
+            const deletedItem = { path: itemPath, type: itemType, isHardDelete: isHardDelete };
+            activeNotifications.set(notificationId, deletedItem);
+            
+            // Toplu silme için undo butonu gösterme
+            if (!isBulkDelete) {
+                const undoBtn = document.createElement('button');
+                undoBtn.id = notificationId + '_undo';
+                undoBtn.style.cssText = 'background: transparent; border: none; cursor: pointer; padding: 4px; margin-left: 10px; display: flex; align-items: center;';
+                const undoImg = document.createElement('img');
+                undoImg.src = '/img/undo.png';
+                undoImg.alt = 'Geri al';
+                undoImg.style.cssText = 'width: 20px; height: 20px;';
+                undoBtn.appendChild(undoImg);
+                
+                content.appendChild(undoBtn);
+                
+                // Undo butonuna event ekle
+                undoBtn.onclick = function() {
+                    clearInterval(countdownInterval);
+                    
+                    if (isHardDelete) {
+                        // Hard delete için onay sor
+                        if (confirm('Bu faylı tamamilə silmək istədiyinizə əminsiniz? Bu əməliyyat geri qaytarıla bilməz!')) {
+                            // Hard delete gerçekten geri getirilemez, bu yüzden sadece bildirimi kapat
+                            notification.remove();
+                            activeNotifications.delete(notificationId);
+                            const hardDeletedItems = JSON.parse(localStorage.getItem('hardDeletedItems') || '[]');
+                            const filtered = hardDeletedItems.filter(item => item.path !== itemPath);
+                            localStorage.setItem('hardDeletedItems', JSON.stringify(filtered));
+                        }
+                    } else {
+                        // Normal delete için geri getir
+                        const endpoint = deletedItem.type === 'folder' ? '/restore-folder' : '/restore';
+                        fetch(endpoint, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ path: deletedItem.path })
+                        }).then(() => {
+                            notification.remove();
+                            activeNotifications.delete(notificationId);
+                            const deletedItems = JSON.parse(localStorage.getItem('deletedItems') || '[]');
+                            const filtered = deletedItems.filter(item => item.path !== itemPath);
+                            localStorage.setItem('deletedItems', JSON.stringify(filtered));
+                            window.location.reload();
+                        });
+                    }
+                };
+            }
+            
+            content.appendChild(textContainer);
+            notification.appendChild(content);
+            container.appendChild(notification);
+            
+            // Geri sayım başlat
+            let countdown = isHardDelete ? 10 : 5;
+            countdownInterval = setInterval(() => {
+                countdown--;
+                countdownElement.textContent = '(' + countdown + ')';
+                
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    notification.remove();
+                    activeNotifications.delete(notificationId);
+                    // Toplu silme için localStorage'dan tüm öğeleri temizle
+                    if (isBulkDelete) {
+                        if (isHardDelete) {
+                            localStorage.removeItem('hardDeletedItems');
+                        } else {
+                            localStorage.removeItem('deletedItems');
+                        }
+                    } else {
+                        // localStorage'dan da temizle
+                        if (!isHardDelete) {
+                            const deletedItems = JSON.parse(localStorage.getItem('deletedItems') || '[]');
+                            const filtered = deletedItems.filter(item => item.path !== itemPath);
+                            localStorage.setItem('deletedItems', JSON.stringify(filtered));
+                        } else {
+                            const hardDeletedItems = JSON.parse(localStorage.getItem('hardDeletedItems') || '[]');
+                            const filtered = hardDeletedItems.filter(item => item.path !== itemPath);
+                            localStorage.setItem('hardDeletedItems', JSON.stringify(filtered));
+                        }
+                    }
+                }
+            }, 1000);
+        }
+        
+        // Toplu silme bildirimi fonksiyonu
+        function showBulkDeleteNotification(count, deletedFiles) {
+            const container = document.getElementById('deleteNotificationsContainer');
+            notificationCount++;
+            const notificationId = 'bulkDeleteNotification_' + notificationCount;
+            
+            // Yeni bildirim kartı oluştur
+            const notification = document.createElement('div');
+            notification.id = notificationId;
+            notification.className = 'delete-notification';
+            notification.style.cssText = 'background: #ffffff; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); min-width: 300px; max-width: 400px; border: 1px solid #e0e0e0; display: block; margin-bottom: 10px;';
+            
+            const content = document.createElement('div');
+            content.style.cssText = 'display: flex; align-items: center; justify-content: space-between;';
+            
+            const textContainer = document.createElement('div');
+            textContainer.style.cssText = 'display: flex; align-items: center; flex: 1;';
+            
+            const notificationText = document.createElement('span');
+            notificationText.id = notificationId + '_text';
+            notificationText.style.cssText = 'font-size: 0.95rem; color: #333333; font-weight: 500;';
+            notificationText.textContent = `${count} sayda fayl silindi`;
+            
+            textContainer.appendChild(notificationText);
+            
+            const undoBtn = document.createElement('button');
+            undoBtn.id = notificationId + '_undo';
+            undoBtn.style.cssText = 'background: transparent; border: none; cursor: pointer; padding: 4px; margin-left: 10px; display: flex; align-items: center;';
+            const undoImg = document.createElement('img');
+            undoImg.src = '/img/undo.png';
+            undoImg.alt = 'Geri al';
+            undoImg.style.cssText = 'width: 20px; height: 20px;';
+            undoBtn.appendChild(undoImg);
+            
+            content.appendChild(textContainer);
+            content.appendChild(undoBtn);
+            notification.appendChild(content);
+            container.appendChild(notification);
+            
+            // Silinen dosyaları sakla
+            const deletedItems = deletedFiles.map(f => ({
+                path: f.path,
+                type: f.type,
+                name: f.name
+            }));
+            activeNotifications.set(notificationId, { files: deletedItems, isBulk: true });
+            
+            // Geri sayım başlat (5 saniye sonra otomatik kapat)
+            const countdownInterval = setTimeout(() => {
+                notification.remove();
+                activeNotifications.delete(notificationId);
+                // localStorage'dan tüm öğeleri temizle
+                const storedItems = JSON.parse(localStorage.getItem('deletedItems') || '[]');
+                const filtered = storedItems.filter(item => {
+                    return !deletedFiles.some(f => f.path === item.path);
+                });
+                localStorage.setItem('deletedItems', JSON.stringify(filtered));
+            }, 5000);
+            
+            // Undo butonuna event ekle
+            undoBtn.onclick = function() {
+                clearTimeout(countdownInterval);
+                
+                // Tüm silinen dosyaları geri getir
+                let restored = 0;
+                let failed = 0;
+                
+                deletedFiles.forEach((file, index) => {
+                    const endpoint = file.type === 'folder' ? '/restore-folder' : '/restore';
+                    fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ path: file.path })
+                    }).then(() => {
+                        restored++;
+                        if (restored + failed === deletedFiles.length) {
+                            notification.remove();
+                            activeNotifications.delete(notificationId);
+                            // localStorage'dan temizle
+                            const storedItems = JSON.parse(localStorage.getItem('deletedItems') || '[]');
+                            const filtered = storedItems.filter(item => {
+                                return !deletedFiles.some(f => f.path === item.path);
+                            });
+                            localStorage.setItem('deletedItems', JSON.stringify(filtered));
+                            window.location.reload();
+                        }
+                    }).catch(err => {
+                        console.error('Geri getirme hatası:', err);
+                        failed++;
+                        if (restored + failed === deletedFiles.length) {
+                            if (failed > 0) {
+                                alert(`${restored} fayl geri gətirildi, ${failed} fayl geri gətirilərkən xəta yarandı.`);
+                            }
+                            notification.remove();
+                            activeNotifications.delete(notificationId);
+                            window.location.reload();
+                        }
+                    });
+                });
+            };
+        }
+        
+        // Sayfa yüklendiğinde silinen öğeler varsa bildirim göster
+        const deletedItemsStr = localStorage.getItem('deletedItems');
+        if (deletedItemsStr) {
+            try {
+                const deletedItems = JSON.parse(deletedItemsStr);
+                deletedItems.forEach(item => {
+                    showDeleteNotification(item.name, item.path, item.type, false);
+                });
+            } catch (e) {
+                console.error('Error parsing deleted items:', e);
+            }
+        }
+        
+        // Sayfa yüklendiğinde hard delete öğeler varsa bildirim gösterme (sebet bölümünde bildirim gösterilmez)
+        // localStorage'dan hardDeletedItems'ı temizle (sayfa yüklendiğinde)
+        localStorage.removeItem('hardDeletedItems');
+
+        let hardDeleteFileIdx = null;
+        let hardDeleteItemPath = null;
+        let hardDeleteItemName = null;
+        let hardDeleteItemType = null;
+        const hardDeleteModal = new bootstrap.Modal(document.getElementById('hardDeleteModal'));
+        const hardDeleteConfirmModal = new bootstrap.Modal(document.getElementById('hardDeleteConfirmModal'));
+        
+        document.querySelectorAll('.file-hard-delete-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                hardDeleteFileIdx = this.getAttribute('data-idx');
+                const file = window.driveFiles[hardDeleteFileIdx];
+                
+                // Onay modalını göster
+                hardDeleteItemPath = file.path;
+                hardDeleteItemName = file.name;
+                hardDeleteItemType = 'file';
+                document.getElementById('hardDeleteConfirmItemName').textContent = file.name;
+                hardDeleteConfirmModal.show();
+            });
+        });
+        
+        // Hard delete onay modalındaki onay butonu
+        document.getElementById('confirmHardDeleteConfirmBtn').addEventListener('click', function() {
+            if (hardDeleteItemPath) {
+                hardDeleteConfirmModal.hide();
+                hardDeleteModal.hide();
+                
+                // Silme işlemi
+                const endpoint = hardDeleteItemType === 'folder' ? '/hard-delete-folder' : '/hard-delete';
+                fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: hardDeleteItemPath })
+                }).then(() => {
+                    // Sebet bölümünde bildirim gösterme, sadece localStorage'a kaydet
+                    const hardDeletedItems = JSON.parse(localStorage.getItem('hardDeletedItems') || '[]');
+                    hardDeletedItems.push({
+                        name: hardDeleteItemName,
+                        path: hardDeleteItemPath,
+                        type: hardDeleteItemType
+                    });
+                    localStorage.setItem('hardDeletedItems', JSON.stringify(hardDeletedItems));
+                    // Sayfayı yenile
+                    window.location.reload();
+                });
+            }
+        });
+        document.getElementById('confirmHardDeleteBtn').addEventListener('click', function() {
+            if (hardDeleteFileIdx !== null) {
+                const file = window.driveFiles[hardDeleteFileIdx];
+                
+                // İlk modal'ı kapat ve onay modalını göster
+                hardDeleteModal.hide();
+                hardDeleteItemPath = file.path;
+                hardDeleteItemName = file.name;
+                hardDeleteItemType = 'file';
+                document.getElementById('hardDeleteConfirmItemName').textContent = file.name;
+                hardDeleteConfirmModal.show();
+            }
+        });
+
+        // Səbət (Silinenler) kurtarma butonu
+        document.querySelectorAll('.file-restore-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const idx = this.getAttribute('data-idx');
+                const file = window.driveFiles[idx];
+                fetch('/restore', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: file.path })
+                }).then(() => window.location.reload());
+            });
+        });
+
+        // Dosya arama (client-side)
+        document.getElementById('fileSearchInput')?.addEventListener('input', function() {
+            const val = this.value.toLowerCase();
+            document.querySelectorAll('table tbody tr').forEach(row => {
+                const nameCell = row.querySelector('td span');
+                if (!nameCell) return;
+                const name = nameCell.textContent.toLowerCase();
+                if (name.includes(val)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        // Toplu seçim ve silme
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+
+        // Silme butonunu güncelle
+        function updateDeleteButton() {
+            const selectedCount = document.querySelectorAll('.file-checkbox:checked').length;
+            const selectedCountBadge = document.getElementById('selectedCountBadge');
+            const deleteSelectedBtnContainer = document.getElementById('deleteSelectedBtnContainer');
+            if (selectedCount > 0) {
+                if (deleteSelectedBtnContainer) {
+                    deleteSelectedBtnContainer.style.display = 'flex';
+                }
+                deleteSelectedBtn.style.display = 'flex';
+                deleteSelectedBtn.style.opacity = '1';
+                deleteSelectedBtn.style.transform = 'scale(1)';
+                if (selectedCountBadge) {
+                    selectedCountBadge.textContent = selectedCount;
+                }
+            } else {
+                if (deleteSelectedBtnContainer) {
+                    deleteSelectedBtnContainer.style.display = 'none';
+                }
+                deleteSelectedBtn.style.display = 'none';
+                deleteSelectedBtn.style.opacity = '0';
+            }
+        }
+
+        // Tümünü seç checkbox'ı
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                document.querySelectorAll('.file-checkbox').forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+                updateDeleteButton();
+                updateSelectAllCheckbox();
+            });
+        }
+
+        // Her dosya checkbox'ı
+        document.body.addEventListener('change', function(e) {
+            if (e.target.classList.contains('file-checkbox')) {
+                updateDeleteButton();
+                updateSelectAllCheckbox();
+            }
+        });
+        
+        // Sayfa yüklendiğinde butonu ve container'ı kesinlikle gizle
+        window.addEventListener('DOMContentLoaded', function() {
+            const deleteSelectedBtnContainer = document.getElementById('deleteSelectedBtnContainer');
+            const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+            if (deleteSelectedBtnContainer) {
+                deleteSelectedBtnContainer.style.display = 'none';
+            }
+            if (deleteSelectedBtn) {
+                deleteSelectedBtn.style.display = 'none';
+            }
+            // Seçim yoksa butonu gizle
+            updateDeleteButton();
+        });
+        
+        // Sayfa yüklendiğinde de kontrol et
+        const deleteSelectedBtnContainer = document.getElementById('deleteSelectedBtnContainer');
+        if (deleteSelectedBtnContainer) {
+            deleteSelectedBtnContainer.style.display = 'none';
+        }
+        if (deleteSelectedBtn) {
+            deleteSelectedBtn.style.display = 'none';
+        }
+        
+        // Buton hover efekti
+        if (deleteSelectedBtn) {
+            deleteSelectedBtn.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.05)';
+                this.style.boxShadow = '0 4px 8px rgba(220, 53, 69, 0.3)';
+            });
+            deleteSelectedBtn.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+                this.style.boxShadow = '0 2px 4px rgba(220, 53, 69, 0.2)';
+            });
+        }
+
+        // Tümünü seç checkbox'ını güncelle
+        function updateSelectAllCheckbox() {
+            if (!selectAllCheckbox) return;
+            const allCheckboxes = document.querySelectorAll('.file-checkbox');
+            const checkedCount = document.querySelectorAll('.file-checkbox:checked').length;
+            selectAllCheckbox.checked = allCheckboxes.length > 0 && checkedCount === allCheckboxes.length;
+            selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < allCheckboxes.length;
+        }
+
+        // Seçili dosyaları sil
+        if (deleteSelectedBtn) {
+            deleteSelectedBtn.addEventListener('click', function() {
+                // Tüm checkbox'ları kontrol et (görünür olsun ya da olmasın)
+                const allCheckboxes = document.querySelectorAll('.file-checkbox');
+                const selectedCheckboxes = Array.from(allCheckboxes).filter(cb => cb.checked);
+                
+                console.log('Toplam checkbox sayısı:', allCheckboxes.length);
+                console.log('Seçili checkbox sayısı:', selectedCheckboxes.length);
+                
+                if (selectedCheckboxes.length === 0) {
+                    alert('Heç bir fayl seçilməyib!');
+                    return;
+                }
+
+                const selectedFiles = [];
+                selectedCheckboxes.forEach((cb, index) => {
+                    const pathAttr = cb.getAttribute('data-file-path');
+                    const nameAttr = cb.getAttribute('data-file-name');
+                    const typeAttr = cb.getAttribute('data-file-type') || 'file';
+                    
+                    if (!pathAttr || !nameAttr) {
+                        console.warn(`Checkbox ${index} eksik bilgi içeriyor:`, { pathAttr, nameAttr, typeAttr });
+                        return;
+                    }
+                    
+                    // Path'i decode et
+                    let decodedPath;
+                    try {
+                        decodedPath = decodeURIComponent(pathAttr);
+                    } catch (e) {
+                        decodedPath = pathAttr; // Zaten decode edilmişse
+                    }
+                    
+                    selectedFiles.push({
+                        path: pathAttr,
+                        name: nameAttr,
+                        type: typeAttr,
+                        decodedPath: decodedPath,
+                        checkbox: cb
+                    });
+                });
+
+                console.log('İşlenecek dosya sayısı:', selectedFiles.length);
+                selectedFiles.forEach((f, i) => {
+                    console.log(`${i + 1}. ${f.name} (${f.type}) - Path: ${f.decodedPath}`);
+                });
+
+                // Sebet bölümünde miyiz kontrol et
+                const urlParams = new URLSearchParams(window.location.search);
+                const currentFilter = urlParams.get('filter');
+                const isDeletedFilter = currentFilter === 'deleted';
+
+                if (confirm(`${selectedFiles.length} faylı ${isDeletedFilter ? 'tamamilə' : ''} silmək istədiyinizə əminsiniz?`)) {
+                    // Tüm seçili dosyaları Promise.all ile sil
+                    const deletedItems = JSON.parse(localStorage.getItem('deletedItems') || '[]');
+                    const hardDeletedItems = JSON.parse(localStorage.getItem('hardDeletedItems') || '[]');
+                    
+                    // Silme işlemlerini sırayla yap (paralel değil, çünkü backend'de race condition olabilir)
+                    let deleteIndex = 0;
+                    const deleteNext = () => {
+                        if (deleteIndex >= selectedFiles.length) {
+                            // Tüm işlemler tamamlandı
+                            const successful = results.filter(r => r.success);
+                            const failed = results.filter(r => !r.success);
+                            
+                            console.log(`Toplam: ${results.length}, Başarılı: ${successful.length}, Başarısız: ${failed.length}`);
+                            
+                            if (failed.length > 0) {
+                                console.error('Başarısız silme işlemleri:', failed);
+                                alert(`${successful.length} fayl silindi, ${failed.length} fayl silinərkən xəta yarandı.\n\nBaşarısız dosyalar:\n${failed.map(f => `- ${f.file.name}`).join('\n')}`);
+                            }
+                            
+                            if (isDeletedFilter) {
+                                // Sebet bölümünde bildirim gösterme
+                                localStorage.setItem('hardDeletedItems', JSON.stringify(hardDeletedItems));
+                                // Sayfayı yenile
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 100);
+                            } else {
+                                // Normal silme - tüm silinen dosyaları localStorage'a kaydet ve bildirim göster
+                                localStorage.setItem('deletedItems', JSON.stringify(deletedItems));
+                                
+                                // Toplu silme için özel bildirim - tüm silinen dosyaları içeren bir bildirim
+                                if (successful.length > 0) {
+                                    // Tüm silinen dosyaların bilgilerini bildirime ekle
+                                    const deletedFilesInfo = successful.map(r => ({
+                                        name: r.file.name,
+                                        path: r.file.decodedPath,
+                                        type: r.file.type
+                                    }));
+                                    
+                                    showBulkDeleteNotification(successful.length, deletedFilesInfo);
+                                }
+                                
+                                // Sayfayı yenile - bildirim gösterildikten sonra
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 300);
+                            }
+                            return;
+                        }
+                        
+                        const file = selectedFiles[deleteIndex];
+                        const index = deleteIndex;
+                        deleteIndex++;
+                        
+                        const endpoint = isDeletedFilter 
+                            ? (file.type === 'folder' ? '/hard-delete-folder' : '/hard-delete')
+                            : (file.type === 'folder' ? '/delete-folder' : '/delete');
+                        
+                        console.log(`[${index + 1}/${selectedFiles.length}] Silme işlemi başlatılıyor: ${file.name} (${file.type}) - ${endpoint} - Path: ${file.decodedPath}`);
+                        
+                        fetch(endpoint, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ path: file.decodedPath })
+                        }).then(response => {
+                            if (!response.ok) {
+                                return response.text().then(text => {
+                                    let errorMsg = 'Silme işlemi başarısız';
+                                    try {
+                                        const data = JSON.parse(text);
+                                        errorMsg = data.message || errorMsg;
+                                    } catch (e) {
+                                        errorMsg = text || errorMsg;
+                                    }
+                                    throw new Error(errorMsg);
+                                });
+                            }
+                            return response.json();
+                        }).then(data => {
+                            console.log(`[${index + 1}/${selectedFiles.length}] ✓ Silme başarılı: ${file.name}`);
+                            // Bildirim bilgisini localStorage'a kaydet
+                            if (isDeletedFilter) {
+                                hardDeletedItems.push({
+                                    name: file.name,
+                                    path: file.decodedPath,
+                                    type: file.type
+                                });
+                            } else {
+                                deletedItems.push({
+                                    name: file.name,
+                                    path: file.decodedPath,
+                                    type: file.type
+                                });
+                            }
+                            results.push({ success: true, file: file });
+                            // Bir sonraki dosyayı sil
+                            deleteNext();
+                        }).catch(err => {
+                            console.error(`[${index + 1}/${selectedFiles.length}] ✗ Silme hatası (${file.name}):`, err);
+                            results.push({ success: false, file: file, error: err.message });
+                            // Bir sonraki dosyayı sil (hata olsa bile devam et)
+                            deleteNext();
+                        });
+                    };
+                    
+                    const results = [];
+                    // İlk dosyayı silmeye başla
+                    deleteNext();
+
+                }
+            });
+        }
+
+        <% function getFileIconPath(name) {
+            const ext = name.split('.').pop().toLowerCase();
+            const iconMap = {
+                "png": "/img/png.png",
+                "jpg": "/img/jpg.png",
+                "jpeg": "/img/jpeg.png",
+                "gif": "/img/gif.png",
+                "bmp": "/img/bmp.png",
+                "webp": "/img/webp.png",
+                "svg": "/img/svg.png",
+                "pdf": "/img/pdf.png",
+                "doc": "/img/doc.png",
+                "docx": "/img/docx.png",
+                "xls": "/img/xls.png",
+                "xlsx": "/img/xlsx.png",
+                "ppt": "/img/ppt.png",
+                "pptx": "/img/pptx.png",
+                "txt": "/img/txt.png",
+                "zip": "/img/zip.png",
+                "rar": "/img/rar.png",
+                "7z": "/img/7z.png",
+                "tar": "/img/tar.png",
+                "gz": "/img/gz.png",
+                "jar": "/img/jar.png",
+                "mp3": "/img/mp3.png",
+                "mp4": "/img/mp4.png",
+                "avi": "/img/avi.png",
+                "mkv": "/img/mkv.png",
+                "mov": "/img/mov.png",
+                "wav": "/img/wav.png",
+                "ogg": "/img/ogg.png",
+                "json": "/img/json.png",
+                "csv": "/img/csv.png",
+                "xml": "/img/xml.png",
+                "ress": "/img/ress.png",
+                "assets": "/img/assets.png",
+                "resource": "/img/resource.png",
+                "dll": "/img/dll.png",
+                "dat": "/img/dat.png",
+                "exe": "/img/exe.png"
+            };
+            return iconMap[ext] || "/img/Unknown.png";
+        } %>
+
+        function getFileIconPathForUpload(name) {
+            const ext = name.split('.').pop().toLowerCase();
+            const iconMap = {
+                "png": "/img/png.png",
+                "jpg": "/img/jpg.png",
+                "jpeg": "/img/jpeg.png",
+                "gif": "/img/gif.png",
+                "bmp": "/img/bmp.png",
+                "webp": "/img/webp.png",
+                "svg": "/img/svg.png",
+                "pdf": "/img/pdf.png",
+                "doc": "/img/doc.png",
+                "docx": "/img/docx.png",
+                "xls": "/img/xls.png",
+                "xlsx": "/img/xlsx.png",
+                "ppt": "/img/ppt.png",
+                "pptx": "/img/pptx.png",
+                "txt": "/img/txt.png",
+                "zip": "/img/zip.png",
+                "rar": "/img/rar.png",
+                "7z": "/img/7z.png",
+                "tar": "/img/tar.png",
+                "gz": "/img/gz.png",
+                "jar": "/img/jar.png",
+                "mp3": "/img/mp3.png",
+                "mp4": "/img/mp4.png",
+                "avi": "/img/avi.png",
+                "mkv": "/img/mkv.png",
+                "mov": "/img/mov.png",
+                "wav": "/img/wav.png",
+                "ogg": "/img/ogg.png",
+                "json": "/img/json.png",
+                "csv": "/img/csv.png",
+                "xml": "/img/xml.png",
+                "ress": "/img/ress.png",
+                "assets": "/img/assets.png",
+                "resource": "/img/resource.png",
+                "dll": "/img/dll.png",
+                "dat": "/img/dat.png",
+                "exe": "/img/exe.png"
+            };
+            return iconMap[ext] || "/img/Unknown.png";
+        }
+        
+        function getFileIconClassForUpload(name) {
+            const iconPath = getFileIconPathForUpload(name);
+            return `<img src="${iconPath}" alt="file icon" style="width:20px;height:20px;vertical-align:middle;margin-right:8px;">`;
+        }
+
+        // Ayarlar Modal JavaScript
+        function showAlert(elementId, message, type) {
+            const alert = document.getElementById(elementId);
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alert.style.display = 'block';
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        // İsim değiştirme
+        document.getElementById('updateUsernameForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const newUsername = document.getElementById('usernameInput').value.trim();
+            if (!newUsername) {
+                showAlert('usernameAlert', 'İstifadəçi adı boş ola bilməz', 'danger');
+                return;
+            }
+            try {
+                const response = await fetch('/update-username', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: newUsername })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('usernameAlert', 'İstifadəçi adı uğurla dəyişdirildi', 'success');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showAlert('usernameAlert', data.message || 'Xəta yarandı', 'danger');
+                }
+            } catch (error) {
+                showAlert('usernameAlert', 'Xəta yarandı', 'danger');
+            }
+        });
+
+        // Telefon değiştirme
+        document.getElementById('updatePhoneForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const newPhone = document.getElementById('phoneInput').value.trim();
+            try {
+                const response = await fetch('/update-phone', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: newPhone })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('phoneAlert', 'Telefon nömrəsi uğurla dəyişdirildi', 'success');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showAlert('phoneAlert', data.message || 'Xəta yarandı', 'danger');
+                }
+            } catch (error) {
+                showAlert('phoneAlert', 'Xəta yarandı', 'danger');
+            }
+        });
+
+        // Şifre değiştirme - Kod gönderme
+        document.getElementById('requestPasswordChangeBtn').addEventListener('click', async function() {
+            try {
+                const response = await fetch('/request-password-change', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('passwordChangeAlert', 'Doğrulama kodu email ünvanınıza göndərildi', 'success');
+                    document.getElementById('passwordChangeStep1').style.display = 'none';
+                    document.getElementById('passwordChangeStep2').style.display = 'block';
+                } else {
+                    showAlert('passwordChangeAlert', data.message || 'Xəta yarandı', 'danger');
+                }
+            } catch (error) {
+                showAlert('passwordChangeAlert', 'Xəta yarandı', 'danger');
+            }
+        });
+
+        // Şifre değiştirme - İptal
+        document.getElementById('cancelPasswordChangeBtn').addEventListener('click', function() {
+            document.getElementById('passwordChangeStep1').style.display = 'block';
+            document.getElementById('passwordChangeStep2').style.display = 'none';
+            document.getElementById('passwordChangeCode').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('newPasswordConfirm').value = '';
+        });
+
+        // Şifre değiştirme - Doğrulama
+        document.getElementById('verifyPasswordChangeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const code = document.getElementById('passwordChangeCode').value.trim();
+            const newPassword = document.getElementById('newPassword').value;
+            const newPasswordConfirm = document.getElementById('newPasswordConfirm').value;
+            
+            if (newPassword !== newPasswordConfirm) {
+                showAlert('passwordChangeVerifyAlert', 'Şifrələr uyğun deyil', 'danger');
+                return;
+            }
+            if (newPassword.length < 6) {
+                showAlert('passwordChangeVerifyAlert', 'Şifrə ən azı 6 simvol olmalıdır', 'danger');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/verify-password-change', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, newPassword })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('passwordChangeVerifyAlert', 'Şifrə uğurla dəyişdirildi', 'success');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showAlert('passwordChangeVerifyAlert', data.message || 'Xəta yarandı', 'danger');
+                }
+            } catch (error) {
+                showAlert('passwordChangeVerifyAlert', 'Xəta yarandı', 'danger');
+            }
+        });
+
+        // Avatar yükleme
+        document.getElementById('avatarUploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('avatarInput');
+            const submitBtn = document.getElementById('avatarSubmitBtn');
+            const alertDiv = document.getElementById('avatarAlert');
+            
+            if (!fileInput.files || !fileInput.files[0]) {
+                alertDiv.innerHTML = '<div class="alert alert-danger">Zəhmət olmasa şəkil seçin</div>';
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('avatar', fileInput.files[0]);
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Yüklənir...';
+            alertDiv.innerHTML = '';
+            
+            try {
+                const response = await fetch('/upload-avatar', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alertDiv.innerHTML = '<div class="alert alert-success">Şəkil uğurla yükləndi!</div>';
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    alertDiv.innerHTML = '<div class="alert alert-danger">' + (data.message || 'Xəta yarandı') + '</div>';
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Yüklə';
+                }
+            } catch (error) {
+                console.error('Avatar upload error:', error);
+                alertDiv.innerHTML = '<div class="alert alert-danger">Xəta yarandı: ' + error.message + '</div>';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Yüklə';
+            }
+        });
+        
+        // Email değiştirme - Kod gönderme
+        document.getElementById('requestEmailChangeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const newEmail = document.getElementById('newEmailInput').value.trim();
+            if (!newEmail || !newEmail.includes('@')) {
+                showAlert('emailChangeAlert', 'Düzgün email ünvanı daxil edin', 'danger');
+                return;
+            }
+            try {
+                const response = await fetch('/request-email-change', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ newEmail })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('emailChangeAlert', 'Doğrulama kodu yeni email ünvanınıza göndərildi', 'success');
+                    document.getElementById('emailChangeStep1').style.display = 'none';
+                    document.getElementById('emailChangeStep2').style.display = 'block';
+                } else {
+                    showAlert('emailChangeAlert', data.message || 'Xəta yarandı', 'danger');
+                }
+            } catch (error) {
+                showAlert('emailChangeAlert', 'Xəta yarandı', 'danger');
+            }
+        });
+
+        // Email değiştirme - İptal
+        document.getElementById('cancelEmailChangeBtn').addEventListener('click', function() {
+            document.getElementById('emailChangeStep1').style.display = 'block';
+            document.getElementById('emailChangeStep2').style.display = 'none';
+            document.getElementById('emailChangeCode').value = '';
+            document.getElementById('newEmailInput').value = '';
+        });
+
+        // Email değiştirme - Doğrulama
+        document.getElementById('verifyEmailChangeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const code = document.getElementById('emailChangeCode').value.trim();
+            try {
+                const response = await fetch('/verify-email-change', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('emailChangeVerifyAlert', 'Email uğurla dəyişdirildi', 'success');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showAlert('emailChangeVerifyAlert', data.message || 'Xəta yarandı', 'danger');
+                }
+            } catch (error) {
+                showAlert('emailChangeVerifyAlert', 'Xəta yarandı', 'danger');
+            }
+        });
+
+        // Klasör oluşturma
+        document.getElementById('createFolderBtn').addEventListener('click', function() {
+            document.getElementById('folderNameInput').value = '';
+            document.getElementById('createFolderAlert').style.display = 'none';
+            new bootstrap.Modal(document.getElementById('createFolderModal')).show();
+        });
+
+        document.getElementById('createFolderForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const folderName = document.getElementById('folderNameInput').value.trim();
+            if (!folderName) {
+                showAlert('createFolderAlert', 'Klasör adı boş ola bilməz', 'danger');
+                return;
+            }
+            
+            const currentPath = new URLSearchParams(window.location.search).get('path') || '';
+            const folderPath = currentPath ? `${currentPath}/${folderName}` : folderName;
+            
+            try {
+                const response = await fetch('/create-folder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ folderPath })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('createFolderAlert', 'Klasör uğurla yaradıldı', 'success');
+                    // Eğer "Faylı taşı" modalı açıksa, klasör listesini yenile ve modalı tekrar aç
+                    const moveModal = bootstrap.Modal.getInstance(document.getElementById('moveFileModal'));
+                    const wasMoveModalOpen = moveModal && moveModal._isShown;
+                    
+                    if (wasMoveModalOpen) {
+                        await loadFoldersForMove();
+                        // Yeni oluşturulan klasörü seç
+                        const select = document.getElementById('targetFolderSelect');
+                        const newOption = Array.from(select.options).find(opt => opt.value === folderPath);
+                        if (newOption) {
+                            select.value = folderPath;
+                        }
+                    }
+                    
+                    setTimeout(() => {
+                        const createModal = bootstrap.Modal.getInstance(document.getElementById('createFolderModal'));
+                        if (createModal) {
+                            createModal.hide();
+                        }
+                        if (!wasMoveModalOpen) {
+                            window.location.reload();
+                        }
+                    }, 1000);
+                } else {
+                    showAlert('createFolderAlert', data.message || 'Xəta yarandı', 'danger');
+                }
+            } catch (error) {
+                showAlert('createFolderAlert', 'Xəta yarandı', 'danger');
+            }
+        });
+
+        // Klasörleri yükle (dosya taşıma için)
+        async function loadFoldersForMove() {
+            try {
+                const response = await fetch('/get-folders');
+                const data = await response.json();
+                const select = document.getElementById('targetFolderSelect');
+                select.innerHTML = '<option value="">Kök klasör</option>';
+                if (data.folders) {
+                    data.folders.forEach(folder => {
+                        const option = document.createElement('option');
+                        option.value = folder.path;
+                        option.textContent = folder.name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Klasörlər yüklənərkən xəta:', error);
+            }
+        }
+
+        // Dosya taşıma
+        document.getElementById('moveFileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const filePath = this.getAttribute('data-file-path');
+            const targetFolder = document.getElementById('targetFolderSelect').value;
+            
+            let newPath;
+            if (targetFolder) {
+                const fileName = filePath.split('/').pop();
+                newPath = `${targetFolder}/${fileName}`;
+            } else {
+                const fileName = filePath.split('/').pop();
+                newPath = fileName;
+            }
+            
+            try {
+                const response = await fetch('/move-file', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ oldPath: filePath, newPath })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('moveFileAlert', 'Fayl uğurla taşındı', 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showAlert('moveFileAlert', data.message || 'Xəta yarandı', 'danger');
+                }
+            } catch (error) {
+                showAlert('moveFileAlert', 'Xəta yarandı', 'danger');
+            }
+        });
+
+        // "Faylı taşı" modalından klasör oluşturma
+        document.getElementById('createFolderFromMoveBtn')?.addEventListener('click', function() {
+            document.getElementById('folderNameInput').value = '';
+            document.getElementById('createFolderAlert').style.display = 'none';
+            const moveModal = bootstrap.Modal.getInstance(document.getElementById('moveFileModal'));
+            if (moveModal) {
+                moveModal.hide();
+            }
+            new bootstrap.Modal(document.getElementById('createFolderModal')).show();
+        });
+
+        // Drag & Drop ile dosya taşıma
+        let draggedFiles = []; // Tek dosya veya seçili dosyalar array'i
+        let isDraggingSelected = false; // Seçili dosyalar mı sürükleniyor?
+        
+        // Dosya satırlarına drag event'leri ekle
+        document.querySelectorAll('.file-row, .folder-row').forEach(row => {
+            row.addEventListener('dragstart', function(e) {
+                const filePath = this.getAttribute('data-file-path') || this.getAttribute('data-folder-path');
+                
+                // Seçili dosyalar var mı kontrol et
+                const selectedCheckboxes = document.querySelectorAll('.file-checkbox:checked');
+                
+                if (selectedCheckboxes.length > 0) {
+                    // Seçili dosyaları sürükle
+                    isDraggingSelected = true;
+                    draggedFiles = [];
+                    selectedCheckboxes.forEach(checkbox => {
+                        const pathAttr = checkbox.getAttribute('data-file-path');
+                        if (pathAttr) {
+                            try {
+                                draggedFiles.push(decodeURIComponent(pathAttr));
+                            } catch (e) {
+                                draggedFiles.push(pathAttr);
+                            }
+                        }
+                    });
+                    
+                    // Seçili satırları görsel olarak işaretle
+                    document.querySelectorAll('.file-row, .folder-row').forEach(r => {
+                        const rPath = r.getAttribute('data-file-path') || r.getAttribute('data-folder-path');
+                        if (rPath && draggedFiles.includes(decodeURIComponent(rPath))) {
+                            r.style.opacity = '0.5';
+                        }
+                    });
+                } else {
+                    // Tek dosya sürükle
+                    isDraggingSelected = false;
+                    if (filePath) {
+                        try {
+                            draggedFiles = [decodeURIComponent(filePath)];
+                        } catch (e) {
+                            draggedFiles = [filePath];
+                        }
+                        this.style.opacity = '0.5';
+                    }
+                }
+                
+                e.dataTransfer.effectAllowed = 'move';
+                // DataTransfer'e bilgi ekle (çoklu seçim için)
+                e.dataTransfer.setData('text/plain', draggedFiles.length > 1 ? 'multiple' : 'single');
+            });
+            
+            row.addEventListener('dragend', function(e) {
+                // Tüm satırların opacity'sini sıfırla
+                document.querySelectorAll('.file-row, .folder-row').forEach(r => {
+                    r.style.opacity = '1';
+                });
+                draggedFiles = [];
+                isDraggingSelected = false;
+            });
+        });
+        
+        // Klasör satırlarına drop event'leri ekle
+        document.querySelectorAll('.folder-row').forEach(row => {
+            row.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.dataTransfer.dropEffect = 'move';
+                this.classList.add('drag-over');
+            });
+            
+            row.addEventListener('dragleave', function(e) {
+                // Sadece gerçekten satırdan çıkıldığında kaldır
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX;
+                const y = e.clientY;
+                if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+                    this.classList.remove('drag-over');
+                }
+            });
+            
+            row.addEventListener('drop', async function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.classList.remove('drag-over');
+                
+                // Seçili dosyaları tekrar kontrol et (dragend sonrası sıfırlanmış olabilir)
+                const selectedCheckboxes = document.querySelectorAll('.file-checkbox:checked');
+                let filesToMove = [];
+                
+                if (selectedCheckboxes.length > 0) {
+                    // Seçili dosyaları kullan
+                    selectedCheckboxes.forEach(checkbox => {
+                        const pathAttr = checkbox.getAttribute('data-file-path');
+                        if (pathAttr) {
+                            try {
+                                filesToMove.push(decodeURIComponent(pathAttr));
+                            } catch (e) {
+                                filesToMove.push(pathAttr);
+                            }
+                        }
+                    });
+                } else if (draggedFiles.length > 0) {
+                    // draggedFiles array'ini kullan (tek dosya durumu için)
+                    filesToMove = draggedFiles;
+                } else {
+                    return; // Taşınacak dosya yok
+                }
+                
+                if (filesToMove.length === 0) return;
+                
+                const targetFolder = decodeURIComponent(this.getAttribute('data-folder-path'));
+                
+                // Toplu taşıma işlemi
+                try {
+                    const results = [];
+                    const errors = [];
+                    
+                    // Her dosyayı sırayla taşı (Promise.all yerine)
+                    for (let i = 0; i < filesToMove.length; i++) {
+                        const oldPath = filesToMove[i];
+                        const fileName = oldPath.split('/').pop();
+                        const newPath = `${targetFolder}/${fileName}`;
+                        
+                        try {
+                            const response = await fetch('/move-file', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ oldPath, newPath })
+                            });
+                            const data = await response.json();
+                            if (data.success) {
+                                results.push({ fileName, success: true });
+                                console.log(`✓ ${fileName} taşındı`);
+                            } else {
+                                errors.push({ fileName, error: data.message || 'Bilinməyən xəta' });
+                                console.error(`✗ ${fileName} taşınamadı:`, data.message);
+                            }
+                        } catch (error) {
+                            errors.push({ fileName, error: error.message });
+                            console.error(`✗ ${fileName} taşınamadı:`, error.message);
+                        }
+                    }
+                    
+                    // Sonuç mesajı göster (sadece hata varsa)
+                    if (errors.length > 0) {
+                        if (results.length > 0) {
+                            alert(`${results.length} fayl taşındı, ${errors.length} fayl taşınamadı:\n${errors.map(e => `- ${e.fileName}: ${e.error}`).join('\n')}`);
+                        } else {
+                            alert(`${errors.length} fayl taşınamadı:\n${errors.map(e => `- ${e.fileName}: ${e.error}`).join('\n')}`);
+                            return; // Sayfayı yenileme
+                        }
+                    }
+                    
+                    window.location.reload();
+                } catch (error) {
+                    alert(error.message || 'Fayllar taşınarkən xəta yarandı');
+                    console.error('Toplu taşıma hatası:', error);
+                }
+            });
+        });
+        
+        // "Geri" satırına drop event'leri ekle (kök klasöre taşıma)
+        document.querySelectorAll('.back-row').forEach(row => {
+            row.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.dataTransfer.dropEffect = 'move';
+                this.classList.add('drag-over');
+            });
+            
+            row.addEventListener('dragleave', function(e) {
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX;
+                const y = e.clientY;
+                if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+                    this.classList.remove('drag-over');
+                }
+            });
+            
+            row.addEventListener('drop', async function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.classList.remove('drag-over');
+                
+                // Seçili dosyaları tekrar kontrol et (dragend sonrası sıfırlanmış olabilir)
+                const selectedCheckboxes = document.querySelectorAll('.file-checkbox:checked');
+                let filesToMove = [];
+                
+                if (selectedCheckboxes.length > 0) {
+                    // Seçili dosyaları kullan
+                    selectedCheckboxes.forEach(checkbox => {
+                        const pathAttr = checkbox.getAttribute('data-file-path');
+                        if (pathAttr) {
+                            try {
+                                filesToMove.push(decodeURIComponent(pathAttr));
+                            } catch (e) {
+                                filesToMove.push(pathAttr);
+                            }
+                        }
+                    });
+                } else if (draggedFiles.length > 0) {
+                    // draggedFiles array'ini kullan (tek dosya durumu için)
+                    filesToMove = draggedFiles;
+                } else {
+                    return; // Taşınacak dosya yok
+                }
+                
+                if (filesToMove.length === 0) return;
+                
+                const backPath = this.getAttribute('data-back-path');
+                const targetPath = backPath ? decodeURIComponent(backPath) : '';
+                
+                // Toplu taşıma işlemi
+                try {
+                    const results = [];
+                    const errors = [];
+                    
+                    // Her dosyayı sırayla taşı (Promise.all yerine)
+                    for (let i = 0; i < filesToMove.length; i++) {
+                        const oldPath = filesToMove[i];
+                        const fileName = oldPath.split('/').pop();
+                        // Eğer backPath boşsa kök klasöre taşı
+                        const newPath = targetPath ? `${targetPath}/${fileName}` : fileName;
+                        
+                        try {
+                            const response = await fetch('/move-file', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ oldPath, newPath })
+                            });
+                            const data = await response.json();
+                            if (data.success) {
+                                results.push({ fileName, success: true });
+                                console.log(`✓ ${fileName} taşındı`);
+                            } else {
+                                errors.push({ fileName, error: data.message || 'Bilinməyən xəta' });
+                                console.error(`✗ ${fileName} taşınamadı:`, data.message);
+                            }
+                        } catch (error) {
+                            errors.push({ fileName, error: error.message });
+                            console.error(`✗ ${fileName} taşınamadı:`, error.message);
+                        }
+                    }
+                    
+                    // Sonuç mesajı göster (sadece hata varsa)
+                    if (errors.length > 0) {
+                        if (results.length > 0) {
+                            alert(`${results.length} fayl taşındı, ${errors.length} fayl taşınamadı:\n${errors.map(e => `- ${e.fileName}: ${e.error}`).join('\n')}`);
+                        } else {
+                            alert(`${errors.length} fayl taşınamadı:\n${errors.map(e => `- ${e.fileName}: ${e.error}`).join('\n')}`);
+                            return; // Sayfayı yenileme
+                        }
+                    }
+                    
+                    window.location.reload();
+                } catch (error) {
+                    alert(error.message || 'Fayllar taşınarkən xəta yarandı');
+                    console.error('Toplu taşıma hatası:', error);
+                }
+            });
+        });
+
+        // Silinen klasörleri kurtarma
+        document.querySelectorAll('.folder-restore-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const folderPath = decodeURIComponent(this.getAttribute('data-folder-path'));
+                fetch('/restore-folder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: folderPath })
+                }).then(() => window.location.reload());
+            });
+        });
+
+        // Silinen klasörleri tamamen silme
+        document.querySelectorAll('.folder-hard-delete-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const folderPath = decodeURIComponent(this.getAttribute('data-folder-path'));
+                const folderName = folderPath.split('/').pop();
+                
+                // Onay modalını göster
+                hardDeleteItemPath = folderPath;
+                hardDeleteItemName = folderName;
+                hardDeleteItemType = 'folder';
+                document.getElementById('hardDeleteConfirmItemName').textContent = folderName;
+                hardDeleteConfirmModal.show();
+            });
+        });
+
+        // Klasör menüsü
+        document.querySelectorAll('.folder-menu-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const folderPath = this.getAttribute('data-folder-path');
+                const menu = document.getElementById(this.nextElementSibling.id);
+                const allMenus = document.querySelectorAll('.folder-menu');
+                
+                // Eğer menü zaten açıksa kapat
+                if (menu.style.display === 'block') {
+                    menu.style.display = 'none';
+                    return;
+                }
+                
+                // Diğer menüleri kapat
+                allMenus.forEach(m => {
+                    if (m !== menu) m.style.display = 'none';
+                });
+                
+                // Menüyü sağda konumlandır
+                const rect = this.getBoundingClientRect();
+                menu.style.display = 'block';
+                menu.style.left = (rect.right - menu.offsetWidth) + 'px';
+                
+                // Menü ekranın altına taşarsa yukarıda aç
+                const menuHeight = menu.offsetHeight;
+                const spaceBelow = window.innerHeight - rect.bottom;
+                const spaceAbove = rect.top;
+                let top;
+                if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
+                    // Yukarıda aç
+                    top = rect.top - menuHeight - 4;
+                } else {
+                    // Aşağıda aç
+                    top = rect.bottom + 4;
+                }
+                menu.style.top = top + 'px';
+                
+                // Menü içindeki butonlara event ekle
+                menu.querySelector('.folder-rename-btn')?.addEventListener('click', function(ev) {
+                    ev.preventDefault();
+                    const folderName = decodeURIComponent(folderPath).split('/').pop();
+                    document.getElementById('renameInput').value = folderName;
+                    document.getElementById('renameForm').setAttribute('data-item-type', 'folder');
+                    document.getElementById('renameForm').setAttribute('data-item-path', decodeURIComponent(folderPath));
+                    new bootstrap.Modal(document.getElementById('renameModal')).show();
+                    menu.style.display = 'none';
+                });
+                
+                menu.querySelector('.folder-star-btn')?.addEventListener('click', function(ev) {
+                    ev.preventDefault();
+                    fetch('/star-folder', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ path: decodeURIComponent(folderPath) })
+                    }).then(() => window.location.reload());
+                    menu.style.display = 'none';
+                });
+                
+                menu.querySelector('.folder-delete-btn')?.addEventListener('click', function(ev) {
+                    ev.preventDefault();
+                    const folderPathDecoded = decodeURIComponent(folderPath);
+                    const folderName = folderPathDecoded.split('/').pop();
+                    
+                    // Direkt sil
+                    fetch('/delete-folder', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ path: folderPathDecoded })
+                    }).then(() => {
+                        // Bildirim bilgisini localStorage'a kaydet (array olarak)
+                        const deletedItems = JSON.parse(localStorage.getItem('deletedItems') || '[]');
+                        deletedItems.push({
+                            name: folderName,
+                            path: folderPathDecoded,
+                            type: 'folder'
+                        });
+                        localStorage.setItem('deletedItems', JSON.stringify(deletedItems));
+                        // Bildirimi göster
+                        showDeleteNotification(folderName, folderPathDecoded, 'folder', false);
+                        // Sayfayı yenile
+                        window.location.reload();
+                    });
+                    
+                    menu.style.display = 'none';
+                });
+            });
+        });
+        
+        // Menü dışına tıklayınca klasör menülerini kapat
+        document.body.addEventListener('click', function(e) {
+            // Eğer tıklanan element menü veya menü butonu değilse, tüm klasör menülerini kapat
+            if (!e.target.closest('.folder-menu') && !e.target.closest('.folder-menu-btn')) {
+                document.querySelectorAll('.folder-menu').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+            }
+        });
+        
+        // Klasör menüsü içindeyken kapanmasın
+        document.querySelectorAll('.folder-menu').forEach(menu => {
+            menu.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
+
+        // Payment onaylama ve reddetme
+        document.body.addEventListener('click', function(e) {
+            if (e.target.closest('.payment-approve-btn')) {
+                const btn = e.target.closest('.payment-approve-btn');
+                const paymentId = btn.getAttribute('data-payment-id');
+                if (confirm('Bu ödənişi təsdiqləmək istədiyinizə əminsiniz?')) {
+                    approvePayment(paymentId);
+                }
+            } else if (e.target.closest('.payment-reject-btn')) {
+                const btn = e.target.closest('.payment-reject-btn');
+                const paymentId = btn.getAttribute('data-payment-id');
+                if (confirm('Bu ödənişi rədd etmək istədiyinizə əminsiniz?')) {
+                    rejectPayment(paymentId);
+                }
+            }
+        });
+
+        async function approvePayment(paymentId) {
+            try {
+                const response = await fetch('/approve-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paymentId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Ödəniş təsdiqləndi. İstifadəçinin yaddaşı artırıldı. Yeni limit: ' + (data.newMaxStorageGB || 'N/A') + ' GB');
+                    // Sayfayı yenile
+                    setTimeout(() => {
+                        location.reload();
+                    }, 500);
+                } else {
+                    alert('Xəta: ' + (data.message || 'Təsdiqləmə zamanı xəta yarandı'));
+                }
+            } catch (error) {
+                alert('Xəta: ' + error.message);
+            }
+        }
+
+        async function rejectPayment(paymentId) {
+            try {
+                const response = await fetch('/reject-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paymentId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Ödəniş rədd edildi.');
+                    location.reload();
+                } else {
+                    alert('Xəta: ' + (data.message || 'Rədd etmə zamanı xəta yarandı'));
+                }
+            } catch (error) {
+                alert('Xəta: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html> 

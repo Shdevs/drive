@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drive</title>
+    <link rel="icon" type="image/png" href="/img/drivecolor.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --shadow-hover: rgba(0, 0, 0, 0.15);
+            --navbar-bg: #ffffff;
+            --footer-bg: #212529;
+            --gradient-start: #4285f4;
+            --gradient-mid: #34a853;
+            --gradient-end: #fbbc04;
+            --gradient-btn-start: #4285f4;
+            --gradient-btn-end: #357abd;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-card: #1e1e1e;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --border-color: #333333;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --shadow-hover: rgba(0, 0, 0, 0.5);
+            --navbar-bg: #1e1e1e;
+            --footer-bg: #0d0d0d;
+            --gradient-start: #3d6bb3;
+            --gradient-mid: #2d7a3d;
+            --gradient-end: #b8860b;
+            --gradient-btn-start: #4a7bc8;
+            --gradient-btn-end: #3d6bb3;
+        }
+
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        body {
+            background-color: #f5f6fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        [data-theme="dark"] body {
+            background-color: #000000;
+        }
+
+        .contact-section {
+            background-color: #f5f6fa;
+        }
+
+        [data-theme="dark"] .contact-section {
+            background-color: #000000;
+        }
+
+        .navbar {
+            background-color: transparent !important;
+            box-shadow: none !important;
+            padding: 0;
+            margin-bottom: 2rem;
+        }
+
+        .navbar-card {
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px var(--shadow);
+            padding: 0;
+            margin: 2rem auto;
+            max-width: 1400px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        [data-theme="dark"] .navbar-card {
+            background-color: #1e1e1e;
+        }
+
+        .navbar-main {
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-link-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: opacity 0.3s ease;
+            gap: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .nav-link-icon:hover {
+            opacity: 0.7;
+            color: var(--text-primary);
+        }
+
+        .nav-link-icon img {
+            width: 14px;
+            height: 14px;
+            object-fit: contain;
+            filter: brightness(0);
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-link-icon:hover img {
+            opacity: 0.7;
+        }
+
+        [data-theme="dark"] .nav-link-icon img {
+            filter: brightness(0) invert(1);
+        }
+
+        .navbar-menu {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .navbar-menu .nav-link {
+            color: var(--text-secondary) !important;
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem !important;
+            margin: 0;
+            border-radius: 8px;
+            position: relative;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-menu .nav-link:hover {
+            color: var(--text-primary) !important;
+            background-color: var(--bg-secondary);
+        }
+
+        .navbar-menu .nav-link.active {
+            color: var(--text-primary) !important;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.75rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            position: relative;
+        }
+
+        .navbar-brand:hover {
+            color: var(--text-primary);
+        }
+
+        .navbar-brand .logo-container {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            flex-shrink: 0;
+        }
+
+        .navbar-brand img {
+            height: 28px;
+            width: 28px;
+            object-fit: contain;
+            transition: opacity 0.3s ease;
+        }
+
+        .navbar-brand img.default-logo {
+            filter: brightness(0);
+            opacity: 1;
+        }
+
+        .navbar-brand img.color-logo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            filter: none;
+        }
+
+        .navbar-brand:hover img.default-logo {
+            opacity: 0;
+        }
+
+        .navbar-brand:hover img.color-logo {
+            opacity: 1;
+        }
+
+        [data-theme="dark"] .navbar-brand img.default-logo {
+            filter: brightness(0) invert(1);
+        }
+
+        .navbar-brand .brand-text {
+            font-weight: 700;
+            font-size: 1.4rem;
+            margin-left: 0.3rem;
+            margin-top: -1px;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: var(--text-primary) !important;
+            transition: all 0.3s ease;
+            margin: 0 0.5rem;
+            padding: 0.5rem 1rem !important;
+            border-radius: 8px;
+        }
+
+        .nav-link:hover {
+            color: var(--gradient-start) !important;
+            background-color: var(--bg-secondary);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 50px;
+            height: 26px;
+            background-color: #ccc;
+            border-radius: 13px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            border: none;
+            padding: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .theme-toggle::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: white;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        [data-theme="dark"] .theme-toggle {
+            background-color: var(--gradient-start);
+        }
+
+        [data-theme="dark"] .theme-toggle::before {
+            transform: translateX(24px);
+        }
+
+        .theme-toggle:hover {
+            opacity: 0.9;
+        }
+
+        .hero-section {
+            padding: 80px 0;
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
+            position: relative;
+        }
+
+        .hero-card {
+            background-color: #ffffff;
+            border-radius: 30px;
+            padding: 60px 40px;
+            box-shadow: 0 4px 30px var(--shadow);
+            max-width: 1400px;
+            width: 100%;
+            margin: -2.5rem auto 0 auto;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        [data-theme="dark"] .hero-card {
+            background-color: #1e1e1e;
+        }
+
+        .navbar-wrapper {
+            width: 100%;
+            margin-bottom: 0;
+        }
+
+        .hero-wrapper {
+            width: 100%;
+            margin-top: -2rem;
+        }
+
+        .hero-section h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            animation: slideUp 0.8s ease-out;
+        }
+
+        .hero-section .lead {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            color: var(--text-secondary);
+            animation: slideUp 1s ease-out;
+        }
+
+        .btn-primary {
+            background-color: #f5f6fa;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            animation: slideUp 1.2s ease-out;
+            color: var(--text-primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            background-color: #edce3c;
+        }
+
+        [data-theme="dark"] .btn-primary {
+            background-color: #1e1e1e;
+            color: var(--text-primary);
+            border: 1px solid #333333;
+        }
+
+        [data-theme="dark"] .btn-primary:hover {
+            background-color: #edce3c;
+            color: #000000;
+            border-color: #edce3c;
+        }
+
+        .form-control {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 10px;
+        }
+
+        .form-control:focus {
+            background-color: var(--bg-secondary);
+            border-color: #edce3c;
+            color: var(--text-primary);
+            box-shadow: 0 0 0 3px rgba(237, 206, 60, 0.15);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-secondary);
+        }
+
+        [data-theme="dark"] .form-control {
+            background-color: #1e1e1e;
+            border-color: #333333;
+            color: var(--text-primary);
+        }
+
+        [data-theme="dark"] .form-control:focus {
+            background-color: #2a2a2a;
+            border-color: #edce3c;
+        }
+
+        .contact-info {
+            color: var(--text-primary);
+        }
+
+        .contact-info strong {
+            color: var(--text-primary);
+        }
+
+        .contact-info img {
+            filter: brightness(0);
+            transition: opacity 0.3s ease;
+        }
+
+        [data-theme="dark"] .contact-info img {
+            filter: brightness(0) invert(1);
+        }
+
+        .features-section {
+            padding: 80px 0;
+        }
+
+        .card {
+            border: none;
+            border-radius: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 20px var(--shadow);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+            height: 100%;
+        }
+
+        [data-theme="dark"] .card {
+            background-color: #1e1e1e;
+        }
+
+        .card:hover {
+            box-shadow: 0 12px 40px var(--shadow-hover);
+            background-color: #eceef2;
+        }
+
+        [data-theme="dark"] .card:hover {
+            background-color: #2a2a2a;
+        }
+
+        .contact-card {
+            background-color: #ffffff;
+        }
+
+        [data-theme="dark"] .contact-card {
+            background-color: #1e1e1e;
+        }
+
+        .card-body {
+            padding: 2.5rem;
+        }
+
+        .card-icon {
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-mid));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+        }
+
+        .card-title {
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+        }
+
+        .card-text {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--text-primary);
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .section-title img {
+            filter: brightness(0);
+            transition: opacity 0.3s ease;
+        }
+
+        [data-theme="dark"] .section-title img {
+            filter: brightness(0) invert(1);
+        }
+
+
+        .list-group-item {
+            background-color: var(--bg-card);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 0.75rem;
+            border-radius: 12px !important;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .list-group-item:hover {
+            border-left-color: var(--gradient-start);
+            background-color: var(--bg-secondary);
+            transform: translateX(5px);
+        }
+
+        .list-group-item::before {
+            content: '✓';
+            color: var(--gradient-mid);
+            font-weight: bold;
+            margin-right: 0.75rem;
+            font-size: 1.2rem;
+        }
+
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 2rem 0;
+            box-shadow: 0 -4px 20px var(--shadow);
+            margin-top: 4rem;
+        }
+
+        footer p {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container.my-5 {
+            background-color: var(--bg-primary);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px var(--shadow);
+            margin: 3rem auto;
+        }
+
+        @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 2.5rem;
+            }
+            .hero-section .lead {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle" aria-label="Tema dəyişdir"></button>
+    <div class="container-fluid px-4">
+        <div class="navbar-wrapper">
+            <nav class="navbar navbar-expand-lg navbar-light">
+                <div class="navbar-card">
+                <div class="navbar-main">
+                    <a class="navbar-brand" href="/">
+                        <div class="logo-container">
+                            <img src="/img/drive.png" alt="Drive" class="default-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                            <img src="/img/drivecolor.png" alt="Drive" class="color-logo" onerror="this.style.display='none';">
+                        </div>
+                        <span class="brand-text">Drive</span>
+                        <span style="display:none;"><i class="bi bi-cloud-arrow-up-fill"></i></span>
+                    </a>
+                    <div class="navbar-menu">
+                        <% if (user) { %>
+                            <a class="nav-link active" href="/drive">
+                                <i class="bi bi-folder-fill"></i> Drive
+                            </a>
+                            <a class="nav-link" href="/storage">
+                                <i class="bi bi-hdd-stack"></i> Saxlama
+                            </a>
+                        <% } else { %>
+                            <a class="nav-link active" href="/">
+                                Ana Səhifə
+                            </a>
+                            <a class="nav-link" href="#elaqe">
+                                Əlaqə
+                            </a>
+                        <% } %>
+                    </div>
+                    <% if (user) { %>
+                        <a class="nav-link-icon" href="/logout">
+                            <span>Exit</span>
+                            <img src="/img/exit.png" alt="Çıxış">
+                        </a>
+                    <% } else { %>
+                        <a class="nav-link-icon" href="/login">
+                            Giriş
+                        </a>
+                    <% } %>
+                </div>
+            </div>
+        </nav>
+        </div>
+    </div>
+
+    <div class="container-fluid px-4">
+        <div class="hero-wrapper">
+            <div class="hero-section">
+                <div class="hero-card">
+                <h1 class="display-4 mb-4">Fayllarınızı Təhlükəsiz Saxlayın</h1>
+                <p class="lead mb-4"><span style="color: #edce3c; font-weight: 700;">2GB</span> pulsuz saxlama sahəsi ilə fayllarınızı asanlıqla idarə edin</p>
+                <p style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2rem;">Hər yerdən çatışan, sürətli və təhlükəsiz bulud saxlama xidməti</p>
+                <% if (!user) { %>
+                    <a href="/register" class="btn btn-primary btn-lg">
+                        <i class="bi bi-rocket-takeoff-fill"></i> İndi Başlayın
+                    </a>
+                <% } else { %>
+                    <a href="/drive" class="btn btn-primary btn-lg">
+                        <i class="bi bi-folder-fill"></i> Drive-a Keçin
+                    </a>
+                <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="features-section" style="padding: 80px 0;">
+        <div class="container-fluid px-4">
+            <div style="max-width: 1400px; margin: 0 auto;">
+                <h2 class="section-title mb-5">Xidmətimizin Xüsusiyyətləri</h2>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <div class="card-icon">
+                                    <i class="bi bi-shield-check-fill"></i>
+                                </div>
+                                <h3 class="card-title">Təhlükəsizlik</h3>
+                                <p class="card-text">Fayllarınız ən yüksək səviyyədə şifrələnir və müdafiə olunur. Məlumatlarınızın təhlükəsizliyi bizim prioritetimizdir.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <div class="card-icon">
+                                    <i class="bi bi-lightning-charge-fill"></i>
+                                </div>
+                                <h3 class="card-title">Sürətli Yükləmə</h3>
+                                <p class="card-text">Yüksək sürətli serverlər sayəsində fayllarınızı tez yükləyə və endirə bilərsiniz. Gözləmə müddəti minimaldır.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <div class="card-icon">
+                                    <i class="bi bi-device-hdd-fill"></i>
+                                </div>
+                                <h3 class="card-title">2GB Pulsuz Yer</h3>
+                                <p class="card-text">Başlanğıc üçün 2GB pulsuz saxlama sahəsi əldə edin. Əlavə yer tələb olunarsa, planlarımızı yoxlaya bilərsiniz.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <div class="card-icon">
+                                    <i class="bi bi-folder-fill"></i>
+                                </div>
+                                <h3 class="card-title">Klasor İdarəetməsi</h3>
+                                <p class="card-text">Fayllarınızı klasorlərə təşkil edin və sürüklə-burax funksiyası ilə asanlıqla hərəkət etdirin. İstediyiniz qədər klasor yarada bilərsiniz.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <div class="card-icon">
+                                    <i class="bi bi-cloud-arrow-up-fill"></i>
+                                </div>
+                                <h3 class="card-title">Çoxlu Fayl Yükləmə</h3>
+                                <p class="card-text">Bir neçə fayl və ya bütöv klasorları eyni vaxtda yükləyə bilərsiniz. Toplu əməliyyatlar dəstəklənir.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <div class="card-icon">
+                                    <i class="bi bi-search"></i>
+                                </div>
+                                <h3 class="card-title">Axtarış Funksiyası</h3>
+                                <p class="card-text">Geniş saxlama sahəsi içərisində fayllarınızı sürətli şəkildə tapın. Axtarış funksiyası ilə vaxtınızdan qənaət edin.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <div class="card-icon">
+                                    <i class="bi bi-arrow-left-right"></i>
+                                </div>
+                                <h3 class="card-title">Asan Paylaşım</h3>
+                                <p class="card-text">Fayllarınızı dostlarınız və iş yoldaşlarınızla paylaşın. Paylaşım linklərini asanlıqla idarə edin.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <div class="card-icon">
+                                    <i class="bi bi-moon-stars-fill"></i>
+                                </div>
+                                <h3 class="card-title">Qaranlıq Rejim</h3>
+                                <p class="card-text">Göz yorğunluğunu azaltmaq üçün qaranlıq rejim dəstəyi. İstediyiniz zaman tema dəyişdirə bilərsiniz.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <div class="card-icon">
+                                    <i class="bi bi-trash-fill"></i>
+                                </div>
+                                <h3 class="card-title">Səbət Sistemi</h3>
+                                <p class="card-text">Silinmiş fayllarınız səbətdə saxlanılır və lazım olduqda bərpa edilə bilər. Təsadüfən silmədən qorunun.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="elaqe" class="contact-section" style="padding: 4rem 0;">
+        <div class="container-fluid px-4">
+            <div style="max-width: 1400px; margin: 0 auto;">
+                <h2 class="section-title mb-3" style="text-align: left; margin-bottom: 1rem !important; display: flex; align-items: center; gap: 0.75rem;">
+                    <img src="/img/support.png" alt="Support" style="width: 32px; height: 32px; object-fit: contain;">
+                    #Əlaqə
+                </h2>
+            <h4 class="mb-4" style="color: var(--text-secondary); font-weight: 400;">Bizimlə əlaqə saxlayın</h4>
+            <div class="card contact-card" style="border-radius: 20px; box-shadow: 0 4px 20px var(--shadow); padding: 3rem;">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3 contact-info" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="bi bi-envelope-at-fill" style="font-size: 1.2rem; color: var(--gradient-start);"></i>
+                            <strong>Email:</strong> <span>info@drive.az</span>
+                        </div>
+                        <div class="mb-3 contact-info" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <img src="/img/phone.png" alt="Phone" style="width: 20px; height: 20px; object-fit: contain;">
+                            <strong>Telefon:</strong> <span>+994 XX XXX XX XX</span>
+                        </div>
+                        <div class="mb-3 contact-info" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <img src="/img/placeholder.png" alt="Location" style="width: 20px; height: 20px; object-fit: contain;">
+                            <strong>Ünvan:</strong> <span>Bakı, Azərbaycan</span>
+                        </div>
+                        <div class="mt-4" style="border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);">
+                            <iframe 
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3039.4286744962347!2d49.8670924!3d40.4092617!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x403087d40b035e9f%3A0x5c4e3b5a5b5b5b5b!2sBaku%2C%20Azerbaijan!5e0!3m2!1sen!2s!4v1690000000000!5m2!1sen!2s" 
+                                width="100%" 
+                                height="300" 
+                                style="border:0; display: block;" 
+                                allowfullscreen="" 
+                                loading="lazy" 
+                                referrerpolicy="no-referrer-when-downgrade"
+                                title="Bakı, Azərbaycan Haritası">
+                            </iframe>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <form id="contactForm">
+                            <div class="mb-3">
+                                <input type="text" name="name" class="form-control" placeholder="Adınız" required>
+                            </div>
+                            <div class="mb-3">
+                                <input type="email" name="email" class="form-control" placeholder="Email" required>
+                            </div>
+                            <div class="mb-3">
+                                <textarea name="message" class="form-control" rows="4" placeholder="Mesajınız" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Göndər</button>
+                            <div id="contactMessage" class="mt-3" style="display: none;"></div>
+                        </form>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container text-center">
+            <p class="mb-0 fw-bold">&copy; 2024 Drive. Bütün hüquqlar qorunur.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Dark Mode Functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+
+        // Check for saved theme preference or default to light mode
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        
+        // Apply the saved theme
+        if (currentTheme === 'dark') {
+            html.setAttribute('data-theme', 'dark');
+        }
+
+        // Toggle theme function
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+
+        // Smooth scroll for better UX
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Contact form submission
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const messageDiv = document.getElementById('contactMessage');
+            const submitBtn = this.querySelector('button[type="submit"]');
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Göndərilir...';
+            messageDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('/contact', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    messageDiv.className = 'mt-3 alert alert-success';
+                    messageDiv.textContent = 'Mesajınız uğurla göndərildi!';
+                    messageDiv.style.display = 'block';
+                    this.reset();
+                } else {
+                    messageDiv.className = 'mt-3 alert alert-danger';
+                    messageDiv.textContent = result.message || 'Xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.';
+                    messageDiv.style.display = 'block';
+                }
+            } catch (error) {
+                messageDiv.className = 'mt-3 alert alert-danger';
+                messageDiv.textContent = 'Xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.';
+                messageDiv.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Göndər';
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ödəniş Sorğuları - Drive</title>
+    <link rel="icon" type="image/png" href="/img/drivecolor.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --card-bg: #f8f9fa;
+            --border-color: #dee2e6;
+        }
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --card-bg: #2d2d2d;
+            --border-color: #404040;
+        }
+        body {
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .table {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .table thead {
+            background: var(--border-color);
+        }
+        .receipt-preview {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-approve {
+            color: #28a745;
+            border-color: #28a745;
+        }
+        .btn-approve:hover {
+            background: #28a745;
+            color: white;
+        }
+        .btn-reject {
+            color: #dc3545;
+            border-color: #dc3545;
+        }
+        .btn-reject:hover {
+            background: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm mb-4" style="background-color: #f8fafd;">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="/drive" style="gap:8px;">
+                <img src="/img/drive.png" alt="Drive" style="height:28px;width:auto;margin-left:80px;">
+                <span>Drive</span>
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/drive">Geri</a>
+                <a class="nav-link" href="/logout">Çıxış</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <h2 class="mb-4"><i class="bi bi-receipt me-2"></i>Ödəniş Sorğuları</h2>
+        
+        <% if (paymentRequests.length === 0) { %>
+            <div class="alert alert-info">
+                Gözləyən ödəniş sorğusu yoxdur.
+            </div>
+        <% } else { %>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Sahib</th>
+                            <th>Çek</th>
+                            <th>Göndərilmə tarixi</th>
+                            <th>Ölçü</th>
+                            <th>Əməliyyat</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% paymentRequests.forEach(function(payment) { %>
+                            <tr>
+                                <td>
+                                    <strong><%= payment.username %></strong>
+                                </td>
+                                <td>
+                                    <% if (payment.receiptFilename.endsWith('.pdf')) { %>
+                                        <a href="/payment-receipts/<%= payment.receiptFilename %>" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-file-pdf me-1"></i>PDF-ə bax
+                                        </a>
+                                    <% } else { %>
+                                        <img src="/payment-receipts/<%= payment.receiptFilename %>" alt="Çek" class="receipt-preview" onclick="window.open('/payment-receipts/<%= payment.receiptFilename %>', '_blank')">
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <%= new Date(payment.submittedAt).toLocaleString('az-AZ', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    }) %>
+                                </td>
+                                <td>
+                                    <strong><%= payment.gb %> GB</strong><br>
+                                    <small class="text-muted"><%= payment.price.toFixed(2) %> AZN</small>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-sm btn-approve" onclick="approvePayment('<%= payment.id %>')" title="Təsdiqlə">
+                                            <i class="bi bi-check-circle"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-reject" onclick="rejectPayment('<%= payment.id %>')" title="Rədd et">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } %>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Dark mode kontrolü
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+
+        async function approvePayment(paymentId) {
+            if (!confirm('Bu ödənişi təsdiqləmək istədiyinizə əminsiniz?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/approve-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paymentId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Ödəniş təsdiqləndi. İstifadəçinin yaddaşı artırıldı.');
+                    location.reload();
+                } else {
+                    alert('Xəta: ' + (data.message || 'Təsdiqləmə zamanı xəta yarandı'));
+                }
+            } catch (error) {
+                alert('Xəta: ' + error.message);
+            }
+        }
+
+        async function rejectPayment(paymentId) {
+            if (!confirm('Bu ödənişi rədd etmək istədiyinizə əminsiniz?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/reject-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paymentId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Ödəniş rədd edildi.');
+                    location.reload();
+                } else {
+                    alert('Xəta: ' + (data.message || 'Rədd etmə zamanı xəta yarandı'));
+                }
+            } catch (error) {
+                alert('Xəta: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
+
